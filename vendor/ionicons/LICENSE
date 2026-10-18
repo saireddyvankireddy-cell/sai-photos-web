@@ -1,0 +1,4 @@
+Ionicons
+MIT License — Copyright (c) 2015-present Ionic (http://ionicframework.com/)
+Source: https://github.com/ionic-team/ionicons (v7.4.0, dist/svg)
+Bundled locally; only the individual SVG files used by the abc app are included.

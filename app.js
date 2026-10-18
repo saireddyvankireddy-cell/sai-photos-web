@@ -1,0 +1,529 @@
+// Gallery gesture helpers (kept in gallery-controls.mjs for isolated tests).
+function sortPhotos(items,order='newest'){
+ const result=[...items];if(order==='relevance')return result;const tie=(a,b)=>a.id.localeCompare(b.id);const date=item=>Number(item.addedAt)||0;
+ return result.sort((a,b)=>{if(order==='largest')return (Number(b.size)||0)-(Number(a.size)||0)||tie(a,b);if(order==='smallest')return (Number(a.size)||0)-(Number(b.size)||0)||tie(a,b);if(order==='name'||order==='name-desc')return (order==='name-desc'?-1:1)*String(a.fileName||a.name).localeCompare(String(b.fileName||b.name),undefined,{numeric:true})||tie(a,b);if(!date(a)||!date(b))return (date(b)>0)-(date(a)>0)||tie(a,b);return (order==='oldest'?date(a)-date(b):date(b)-date(a))||tie(a,b);});
+}
+function rangeSelection(ids,anchor,end,baseline,add=true){const selected=new Set(baseline),a=ids.indexOf(anchor),b=ids.indexOf(end);if(a<0||b<0)return selected;for(const id of ids.slice(Math.min(a,b),Math.max(a,b)+1))add?selected.add(id):selected.delete(id);return selected;}
+class GallerySelection{
+ constructor({change,deleteSelected}){this.selected=new Set();this.mode=false;this.change=change;this.deleteSelected=deleteSelected;this.grids=[];}
+ scope(key){if(key!==this.key){this.key=key;this.mode=false;this.selected.clear();this.refresh();}}
+ attach(grid){
+  if(this.grids.includes(grid))return;this.grids.push(grid);
+  grid.style.userSelect="none";grid.style.webkitUserSelect="none";
+  grid.addEventListener("contextmenu",event=>event.preventDefault());
+  const cardAt=target=>target.closest?.('[data-photo-id]');
+  const prepare=(card,x,y)=>{clearTimeout(this.hold);this.interacting=true;this.lastHit=null;this.x=x;this.y=y;this.down=[x,y];this.startCard=card.dataset.photoId;this.moved=false;this.cancelled=false;};
+  const begin=()=>{this.mode=true;this.drag=true;this.anchor=this.startCard;this.baseline=new Set(this.selected);this.add=!this.selected.has(this.anchor);this.dragIds=this.ids();this.move(this.anchor);this.suppressClick=true;};
+  const finish=()=>{clearTimeout(this.hold);cancelAnimationFrame(this.frame);this.frame=null;this.drag=false;this.interacting=false;this.dragIds=null;this.pointer=null;this.touchId=null;};
+  const tap=()=>{if(this.mode&&!this.moved&&!this.cancelled&&!this.drag){this.selected.has(this.startCard)?this.selected.delete(this.startCard):this.selected.add(this.startCard);this.refresh();}if(this.mode)this.suppressClick=true;};
+  // A normal vertical swipe must remain browser scrolling, even in selection mode.
+  // Only a held finger becomes a selection gesture; prevent its touchmove default
+  // before WebView starts scrolling. Changing touch-action mid-gesture is too late.
+  grid.addEventListener('touchstart',event=>{if(event.touches.length!==1){this.cancelled=true;finish();return;}const card=cardAt(event.target);if(!card||event.target.closest('input,select,button.person-remove,[data-gallery-action]'))return;const touch=event.touches[0];prepare(card,touch.clientX,touch.clientY);this.touchId=touch.identifier;this.hold=setTimeout(begin,450);},{passive:true});
+  grid.addEventListener('touchmove',event=>{const touch=[...event.touches].find(value=>value.identifier===this.touchId);if(!touch)return;this.x=touch.clientX;this.y=touch.clientY;if(!this.drag){if(Math.hypot(this.x-this.down[0],this.y-this.down[1])>10){this.moved=true;clearTimeout(this.hold);}return;}event.preventDefault();this.hit();this.scroll();},{passive:false});
+  grid.addEventListener('touchend',()=>{if(this.touchId==null)return;tap();finish();});
+  grid.addEventListener('touchcancel',()=>{this.cancelled=true;finish();});
+  grid.addEventListener('pointerdown',event=>{if(!['mouse','pen'].includes(event.pointerType))return;const card=cardAt(event.target);if(!card||event.target.closest('input,select,button.person-remove,[data-gallery-action]'))return;prepare(card,event.clientX,event.clientY);this.pointer=event.pointerId;const start=()=>{begin();grid.setPointerCapture(event.pointerId);};if(this.mode){event.preventDefault();start();}else this.hold=setTimeout(start,450);});
+  grid.addEventListener('pointermove',event=>{if(!['mouse','pen'].includes(event.pointerType)||this.pointer!==event.pointerId)return;this.x=event.clientX;this.y=event.clientY;if(!this.drag&&Math.hypot(this.x-this.down[0],this.y-this.down[1])>10){this.moved=true;clearTimeout(this.hold);}if(!this.drag)return;event.preventDefault();this.hit();this.scroll();});
+  grid.addEventListener('pointerup',event=>{if(['mouse','pen'].includes(event.pointerType))finish();});grid.addEventListener('pointercancel',event=>{if(['mouse','pen'].includes(event.pointerType))finish();});
+  grid.addEventListener('click',event=>{if(!this.mode&&!this.suppressClick)return;const card=cardAt(event.target);if(card&&!event.target.closest('input,button.person-remove,[data-gallery-action]')){if(this.mode&&!this.suppressClick){this.selected.has(card.dataset.photoId)?this.selected.delete(card.dataset.photoId):this.selected.add(card.dataset.photoId);this.refresh();}event.preventDefault();event.stopPropagation();}this.suppressClick=false;},true);
+ }
+
+ ids(){return [...new Set(this.grids.filter(grid=>grid.getClientRects().length).flatMap(grid=>[...grid.querySelectorAll('[data-photo-id]')].map(card=>card.dataset.photoId)))];}
+ move(id){if(this.lastHit===id)return;this.lastHit=id;const next=rangeSelection(this.dragIds||this.ids(),this.anchor,id,this.baseline,this.add);this.selected.clear();for(const value of next)this.selected.add(value);this.refresh();}
+ hit(){const card=document.elementFromPoint(this.x,this.y)?.closest('[data-photo-id]');if(card)this.move(card.dataset.photoId);}
+ scroll(){if(this.frame)return;const tick=()=>{this.frame=null;if(!this.drag)return;const edge=110,speed=this.y<edge?-14:this.y>innerHeight-edge?14:0;if(speed){window.scrollBy(0,speed);this.hit();this.frame=requestAnimationFrame(tick);}};this.frame=requestAnimationFrame(tick);}
+ toggle(){this.mode=!this.mode;if(!this.mode)this.selected.clear();this.refresh();}
+ refresh(){for(const grid of this.grids){grid.classList.toggle('selecting',this.mode);for(const card of grid.querySelectorAll('[data-photo-id]')){const active=this.selected.has(card.dataset.photoId);card.classList.toggle('is-selected',active);card.setAttribute('aria-selected',String(active));const box=card.querySelector('input[type=checkbox]');if(box)box.checked=active;}}this.change?.();}
+ selectLoaded(){this.mode=true;for(const id of this.ids())this.selected.add(id);this.refresh();}
+ clear(){this.selected.clear();this.refresh();}
+}
+
+import { APP_VERSION,setupSettings } from './settings.mjs';
+import { cancelLibraryScan,formatSize,normalizeFileVersion } from './photo-tools.mjs';
+import { listDownloadedSongs } from './photo-cache.mjs';
+import { setupEnteGallery,activeDeletedPhotoIds } from './smart-features.mjs';
+import { MusicPlayer } from './music-player.mjs';
+import { PhotoLibrary } from './photo-library.mjs';
+window.SAI_RUNNING_VERSION=APP_VERSION;
+const $ = id => document.getElementById(id);
+const base = '/.netlify/functions/';
+const state = { tab: 'photo', photo: [], audio: [], connected: false, limit: 50, generation: 0 };
+const photoLibrary = new PhotoLibrary({ api, photoFolder: () => photoFolder, photos: () => state.photo, render, onDelete: id => {
+  cancelLibraryScan(state,photoLibrary,loadController);
+  state.photo = state.photo.filter(photo => photo.id !== id);
+  if(window.SAI_ANDROID)api('device-offline',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'remove',id})}).catch(()=>{});
+  $('refresh').disabled = !state.connected;
+} });
+const musicPlayer = window.SAI_PHOTOS_ONLY&&!window.SAI_MUSIC_ENABLED ? {reset(){},applyCloudDeletes(){},savePosition(){},items(){return [];},render(){},playerUI(){},setSleep(){},stopSleep(){},openFullscreen(){},closeFullscreen(){},current:null,allTracks:()=>new Map(),play(){}} : new MusicPlayer({ library: photoLibrary, musicFolder:()=>musicFolder, tracks: () => state.audio, openAudio: () => setTab('audio'), render, onDelete: id => {
+  cancelLibraryScan(state,photoLibrary,loadController); state.audio = state.audio.filter(track => track.id !== id); $('refresh').disabled = false;
+} });
+if(window.SAI_MUSIC_ENABLED&&localStorage.getItem('sai-music-suggest')!=='off')musicPlayer.view='foryou';
+if(window.SAI_PHOTOS_ONLY){
+  document.body.classList.add('photos-only');$('photoNavigation').hidden=false;$('indexModeWrap').hidden=false;$('photoControls').hidden=false;const tabsNav=document.querySelector('.tabs');if(tabsNav)tabsNav.hidden=true;$('openMenu').hidden=false;
+  const sectionBar=document.querySelector('.photo-sections');if(sectionBar){for(const id of ['selectPhotos','sortPhotos']){const node=$(id);if(node)sectionBar.append(node);}}
+  const controls=$('photoControlContent');for(const element of [$('choosePhotoFolder').closest('.music-folder'),$('photoFolderSummary'),$('indexModeWrap'),$('indexPhotos').closest('.photo-actions'),$('indexStatus'),$('visualIndexStatus')])if(element)controls.append(element);
+  const accountButtons=document.createElement('div');accountButtons.className='photo-account-actions';accountButtons.append($('connect'),$('connectToken'),$('disconnect'));controls.append(accountButtons);
+
+  const icons={navPhotos:['library','Photos'],navAlbums:['albums','Albums'],navSearch:['library','Search'],navPeople:['people','People'],navCleanup:['duplicates','Cleanup']};
+  const titles={library:'Photos',albums:'Albums',people:'People',favorites:'Favorites',duplicates:'Cleanup',similar:'Similar',large:'Large files'};
+  const gotoView=(view,focusSearch)=>{photoLibrary.view=view;photoLibrary.cleanup.focusId=null;photoLibrary.focus=null;photoLibrary.filters={};photoLibrary.filterTitle='';$('search').value='';photoLibrary.searchQuery='';photoLibrary.semanticScores=null;setTab('photo');$('appTitle').textContent=titles[view]||'Photos';for(const key of Object.keys(icons))$(key).setAttribute('aria-current',String(icons[key][0]===view&&key!=='navSearch'));if(focusSearch){$('search').focus();$('search').scrollIntoView({block:'center'});}else window.scrollTo({top:0,behavior:'smooth'});if($('menuDrawer').open)$('menuDrawer').close();};
+  for(const [id,[view,label]]of Object.entries(icons))$(id).onclick=()=>gotoView(view,id==='navSearch');
+  const menuViews={menuPhotos:'library',menuAlbums:'albums',menuPeople:'people',menuFavorites:'favorites',menuCleanup:'duplicates',menuSimilar:'similar',menuLarge:'large'};
+  for(const [id,view] of Object.entries(menuViews))$(id).onclick=()=>gotoView(view,false);
+  $('menuSearch').onclick=()=>gotoView('library',true);
+  const openDrawer=()=>{const drawer=$('menuDrawer');if(!drawer.open)drawer.showModal();};
+  $('openMenu').onclick=openDrawer;
+  const menuDrawer=$('menuDrawer');
+  menuDrawer.addEventListener('click',event=>{if(event.target===menuDrawer)menuDrawer.close();});
+  let drawerTouch=null;
+  menuDrawer.addEventListener('touchstart',event=>{const touch=event.touches[0];drawerTouch={x:touch.clientX,y:touch.clientY};},{passive:true});
+  menuDrawer.addEventListener('touchmove',event=>{if(!drawerTouch)return;const touch=event.touches[0];if(touch.clientX-drawerTouch.x<-60&&Math.abs(touch.clientY-drawerTouch.y)<90){drawerTouch=null;menuDrawer.close();}},{passive:true});
+  menuDrawer.addEventListener('touchend',()=>{drawerTouch=null;},{passive:true});
+  let edgeTouch=null;
+  document.addEventListener('touchstart',event=>{const touch=event.touches[0];edgeTouch=touch.clientX<=30&&!menuDrawer.open?{x:touch.clientX,y:touch.clientY}:null;},{passive:true,capture:true});
+  document.addEventListener('touchmove',event=>{if(!edgeTouch||menuDrawer.open)return;const touch=event.touches[0];const dx=touch.clientX-edgeTouch.x;if(dx>70&&Math.abs(touch.clientY-edgeTouch.y)<90){edgeTouch=null;openDrawer();}else if(dx<-25){edgeTouch=null;}},{passive:true,capture:true});
+  document.addEventListener('touchend',()=>{edgeTouch=null;},{passive:true,capture:true});
+  $('closeMenu').onclick=()=>$('menuDrawer').close();
+  $('menuSettings').onclick=()=>{$('menuDrawer').close();$('openSettings').click();};
+  $('menuAccount').onclick=()=>{$('menuDrawer').close();$('openSettings').click();const page=$('settingsMenu').querySelector('[data-settings-page="account"]');if(page)page.click();};
+}
+setupSettings(photoLibrary);
+$('settingsLibraryControls').append($('photoControls'));if(window.SAI_PHOTOS_ONLY)$('settingsAccountPage').append($('connectToken'),$('disconnect'));$('photoControls').hidden=false;$('photoControls').open=true;
+const controls=$('photoControlContent');for(const element of [$('choosePhotoFolder').closest('.music-folder'),$('photoFolderSummary'),$('indexModeWrap'),$('indexPhotos').closest('.photo-actions'),$('indexStatus'),$('visualIndexStatus')])if(element)controls.append(element);
+const gallerySelection=new GallerySelection({change:()=>{photoLibrary.cleanup.refreshSelection();const count=gallerySelection.selected.size;if(window.SAI_PHOTOS_ONLY)$('photoNavigation').classList.toggle('has-selection',gallerySelection.mode||count>0);$('selectionToolbar').hidden=!gallerySelection.mode;$('selectPhotos').textContent=gallerySelection.mode?'Done':'Select';$('selectedPhotoCount').textContent=count+' selected';$('deleteSelectedPhotos').disabled=!count||gallerySelection.busy;const albumButton=document.getElementById('bulkAddToAlbum');if(albumButton)albumButton.disabled=!count||gallerySelection.busy;$('cleanupSelection').textContent=count+' selected';$('deleteCleanupSelection').disabled=!count||photoLibrary.cleanup.busy;},deleteSelected:()=>photoLibrary.cleanup.deleteSelection()});
+photoLibrary.selection=gallerySelection;photoLibrary.cleanup.selected=gallerySelection.selected;gallerySelection.attach($('photoGrid'));gallerySelection.attach($('cleanupGroups'));
+$('selectPhotos').onclick=()=>gallerySelection.toggle();$('selectLoadedPhotos').onclick=()=>gallerySelection.selectLoaded();$('clearSelectedPhotos').onclick=()=>gallerySelection.clear();$('deleteSelectedPhotos').onclick=async()=>{gallerySelection.busy=true;gallerySelection.refresh();try{await photoLibrary.cleanup.deleteSelection();}finally{gallerySelection.busy=false;gallerySelection.refresh();}};
+function toast(message){let el=document.getElementById('saiToast');if(!el){el=document.createElement('div');el.id='saiToast';document.body.append(el);}el.textContent=message;el.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('show'),4200);}
+window.addEventListener('sai-mirror-cleared',()=>{try{for(const url of musicPlayer.cachedURLs?.values?.()||[])URL.revokeObjectURL(url);musicPlayer.cachedURLs?.clear?.();musicPlayer.downloads?.clear?.();}catch{}render();});
+if(new URLSearchParams(location.search).get('recovered')==='1')toast('The app recovered from a startup problem and reset only the local cache. Your login and everything in pCloud are untouched; previews and downloads rebuild automatically.');
+
+async function bulkTransfer(action){const ids=[...gallerySelection.selected];if(!ids.length)return;const target=await openTransferPicker(action);if(!target)return;const account=photoLibrary.account;const photos=state.photo.filter(photo=>ids.includes(photo.id));if(!photos.length)return;let done=0,failed=0;let firstError="";const movedIds=[];gallerySelection.busy=true;gallerySelection.refresh();try{for(let offset=0;offset<photos.length;offset+=25){if(photoLibrary.account!==account)return;toast(`${action==='move'?'Moving':'Copying'} ${offset+1}–${Math.min(offset+25,photos.length)} of ${photos.length}…`);const result=await api('photos-transfer',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({confirmed:true,action,targetFolderId:target.id,items:photos.slice(offset,offset+25).map(photo=>({id:photo.id,fileName:photo.fileName}))})});const rows=result.results||[];for(const row of rows){if(row.error){failed++;firstError ||= row.error;continue;}done++;if(action==='move'&&row.moved){movedIds.push(row.id);const moved=state.photo.find(p=>p.id===row.id);if(moved){moved.folderId=target.id;moved.folderPath=target.name;moved.folderName=target.name.split('/').pop().trim();}gallerySelection.selected.delete(row.id);}}}if(movedIds.length){photoLibrary.render();$('refresh').click();}toast(`${action==='move'?'Moved':'Copied'} ${done} photo${done===1?'':'s'} to ${target.name}${failed?' · '+failed+' failed: '+firstError:''}.`);}catch(error){toast(`${action==='move'?'Move':'Copy'} could not finish: ${error.message||'check your connection and retry'}`);}finally{gallerySelection.busy=false;gallerySelection.refresh();}}
+if($('copySelectedPhotos'))$('copySelectedPhotos').onclick=()=>bulkTransfer('copy');
+if($('moveSelectedPhotos'))$('moveSelectedPhotos').onclick=()=>bulkTransfer('move');
+const enteGallery=setupEnteGallery(photoLibrary);
+window.saiApple={library:photoLibrary,state,enteGallery};
+// Deep-link navigation: saiphotos://open?view=search&q=...&album=/person=/photo=
+window.saiDeepLink=payload=>{
+  try{
+    const link=typeof payload==='string'?JSON.parse(payload||'{}'):(payload||{});
+    const view=String(link.view||'').toLowerCase();
+    const query=String(link.q||link.query||'').trim();
+    const reset=()=>{photoLibrary.focus=null;photoLibrary.filters={};photoLibrary.filterTitle='';photoLibrary.searchQuery='';photoLibrary.semanticScores=null;const field=$('search');if(field)field.value='';};
+    if(link.photo){const item=(state.photo||[]).find(photo=>photo.id===link.photo);if(!item)return{ok:false,error:'That photo is not in your library.'};photoLibrary.open(item,[item]);return{ok:true,action:'photo'};}
+    if(link.album){const hit=Object.entries(photoLibrary.meta.albums||{}).find(([,album])=>String(album.name||'').toLowerCase()===String(link.album).toLowerCase());if(!hit)return{ok:false,error:'Album not found.'};reset();photoLibrary.view='albums';photoLibrary.focus=hit[0];photoLibrary.render();return{ok:true,action:'album'};}
+    if(link.person){const person=(photoLibrary.people||[]).find(entry=>String(entry.name||'').toLowerCase()===String(link.person).toLowerCase());if(!person)return{ok:false,error:'Person not found.'};reset();photoLibrary.view='people';photoLibrary.focus=person.id;photoLibrary.render();return{ok:true,action:'person'};}
+    if(view==='search'||query){reset();enteGallery.navigate('search');if(query){const field=$('search');if(field)field.value=query;photoLibrary.searchQuery=query.toLowerCase();photoLibrary.semanticScores=null;render();try{photoLibrary.aiSearch?.(query);}catch{}}return{ok:true,action:'search'};}
+    if(view==='albums'||view==='favorites'||view==='photos'||view==='library'){reset();enteGallery.navigate(view==='albums'?'albums':view==='favorites'?'favorites':'home');return{ok:true,action:view};}
+    reset();enteGallery.navigate('home');return{ok:true,action:'home'};
+  }catch(error){return{ok:false,error:error.message||'Deep link failed.'};}
+};
+let galleryBatch=50;try{galleryBatch=localStorage.getItem('sai-gallery-batch')==='100'?100:50;$('sortPhotos').value=localStorage.getItem('sai-gallery-sort')||'newest';$('galleryTheme').value=localStorage.getItem('sai-gallery-theme')||'system';}catch{}
+state.limit=galleryBatch;$('galleryBatch').value=String(galleryBatch);
+function applyGalleryTheme(){const choice=$('galleryTheme').value;document.body.classList.toggle('theme-dark',choice==='dark'||choice==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);try{localStorage.setItem('sai-gallery-theme',choice);}catch{}}
+applyGalleryTheme();matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyGalleryTheme);$('galleryTheme').onchange=applyGalleryTheme;
+function saiUiMode(){try{const mode=localStorage.getItem('sai-ui');return mode==='sai'||mode==='ente'||mode==='apple'?mode:'apple';}catch{return 'apple';}}
+function applyUiMode(mode,rerender){const next=mode==='sai'||mode==='apple'?mode:'ente';document.documentElement.dataset.ui=next;try{localStorage.setItem('sai-ui',next);}catch{}const select=$('uiStyle');if(select&&select.value!==next)select.value=next;applyAppleChrome(next);window.saiAppleUI?.[next==='apple'?'activate':'deactivate']?.();if(rerender)photoLibrary.render();return next;}
+window.saiApplyUi=mode=>applyUiMode(mode,true);window.saiUiMode=saiUiMode;
+document.documentElement.dataset.ui=saiUiMode();if($('uiStyle'))$('uiStyle').value=saiUiMode();$('uiStyle').onchange=()=>{const applied=applyUiMode($('uiStyle').value,true);toast(applied==='sai'?'Interface: Sai Photos — the new look.':applied==='apple'?'Interface: Apple Photos.':'Interface: Ente style (classic).');};
+let wellnessActiveMs=0,wellnessMark=Date.now();
+window.saiWellnessReset=()=>{wellnessActiveMs=0;wellnessMark=Date.now();};
+setInterval(()=>{const now=Date.now();if(document.visibilityState==='visible'){let on=true;try{on=localStorage.getItem('sai-wellness')!=='off';}catch{}if(on)wellnessActiveMs+=now-wellnessMark;}wellnessMark=now;if(wellnessActiveMs>=600000){wellnessActiveMs=0;const dialog=$('wellnessDialog');if(dialog&&!dialog.open)dialog.showModal();}},30000);
+$('galleryBatch').onchange=()=>{galleryBatch=Number($('galleryBatch').value)===100?100:50;state.limit=galleryBatch;try{localStorage.setItem('sai-gallery-batch',String(galleryBatch));}catch{}render();};
+$('sortPhotos').onchange=()=>{try{localStorage.setItem('sai-gallery-sort',$('sortPhotos').value);}catch{}state.limit=galleryBatch;render();};
+const galleryMoreObserver=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting)&&!$('more').hidden&&state.tab==='photo'){appendMorePhotos();}},{rootMargin:'1400px'});galleryMoreObserver.observe($('more'));
+let libraryZoom='days';try{libraryZoom=localStorage.getItem('sai-library-zoom')||'days';}catch{}if(!['years','months','days','all'].includes(libraryZoom))libraryZoom='days';state.libraryZoom=libraryZoom;
+const libraryZoomBar=document.createElement('div');libraryZoomBar.id='libraryZoom';libraryZoomBar.className='library-zoom';libraryZoomBar.setAttribute('role','tablist');libraryZoomBar.setAttribute('aria-label','Library zoom');libraryZoomBar.hidden=true;
+const libraryZoomSync=()=>{for(const button of libraryZoomBar.querySelectorAll('button'))button.setAttribute('aria-current',String(button.dataset.zoom===libraryZoom));};
+for(const [key,label] of [['years','Years'],['months','Months'],['days','Days'],['all','All']]){const button=document.createElement('button');button.type='button';button.dataset.zoom=key;button.setAttribute('role','tab');button.textContent=label;button.onclick=()=>{libraryZoom=key;state.libraryZoom=key;try{localStorage.setItem('sai-library-zoom',key);}catch{}state.limit=galleryBatch;libraryZoomSync();render();};libraryZoomBar.append(button);}
+$('photoGrid').parentNode.insertBefore(libraryZoomBar,$('photoGrid'));libraryZoomSync();
+function applyAppleChrome(mode){
+  const apple=mode==='apple';
+  const forYou=$('navForYou');if(forYou)forYou.hidden=!apple;
+  const title=$('appTitle');if(apple&&title)title.textContent='Library';
+  if(!apple&&!forYouPanel.hidden)hideForYou();
+}
+const forYouPanel=document.createElement('section');forYouPanel.id='forYouPanel';forYouPanel.className='foryou';forYouPanel.hidden=true;
+$('photoGrid').parentNode.insertBefore(forYouPanel,$('photoGrid'));
+function hideForYou(){if(forYouPanel.hidden)return;forYouPanel.hidden=true;$('navForYou')?.setAttribute('aria-current','false');for(const id of ['photoGrid','galleryToolbar','more']){const node=$(id);if(node)node.hidden=false;}}
+function showForYou(){
+  forYouPanel.hidden=false;$('navPhotos')?.setAttribute('aria-current','false');$('navAlbums')?.setAttribute('aria-current','false');$('navSearch')?.setAttribute('aria-current','false');$('navForYou')?.setAttribute('aria-current','true');for(const id of ['photoGrid','galleryToolbar','more']){const node=$(id);if(node)node.hidden=true;}libraryZoomBar.hidden=true;
+  const photos=state.photo||[];const now=new Date();const meta=photoLibrary.meta||{};const collections=[];
+  const add=(title,list)=>{if(list&&list.length)collections.push({title,photos:list});};
+  add('Favorites',photos.filter(photo=>meta.favorites?.[photo.id]));
+  add('On this day',photos.filter(photo=>{if(!photo.addedAt)return false;const date=new Date(photo.addedAt);return date.getMonth()===now.getMonth()&&date.getDate()===now.getDate()&&date.getFullYear()<now.getFullYear();}));
+  add('This month, past years',photos.filter(photo=>{if(!photo.addedAt)return false;const date=new Date(photo.addedAt);return date.getMonth()===now.getMonth()&&date.getFullYear()<now.getFullYear();}));
+  const years=[...new Set(photos.map(photo=>photo.addedAt?new Date(photo.addedAt).getFullYear():0).filter(Boolean))].sort((a,b)=>b-a);
+  if(years[0])add('Best of '+years[0],photos.filter(photo=>photo.addedAt&&new Date(photo.addedAt).getFullYear()===years[0]).slice(0,30));
+  add('Videos',photos.filter(photo=>photo.mediaType==='video'));
+  add('Screenshots',photos.filter(photo=>/(screen[-_ ]?shot|screenshot)/i.test(photo.fileName||'')));
+  forYouPanel.replaceChildren();
+  const heading=document.createElement('h2');heading.className='foryou-title';heading.textContent='For You';forYouPanel.append(heading);
+  if(!collections.length){const empty=document.createElement('p');empty.className='foryou-empty';empty.textContent='Memories appear here as your library finishes loading.';forYouPanel.append(empty);return;}
+  for(const collection of collections){
+    const section=document.createElement('section');section.className='foryou-collection';
+    const title=document.createElement('h3');title.textContent=collection.title;
+    const row=document.createElement('div');row.className='foryou-row';
+    for(const photo of collection.photos.slice(0,15)){
+      const card=document.createElement('button');card.type='button';card.className='foryou-card';
+      const image=document.createElement('img');image.alt=photo.fileName;image.loading='lazy';image.decoding='async';photoLibrary.loadTile(photo,image);
+      const cap=document.createElement('span');cap.textContent=collection.photos.length+(collection.photos.length===1?' item':' items');
+      card.append(image,cap);card.onclick=()=>{hideForYou();enteGallery.filter({ids:collection.photos.map(entry=>entry.id)},collection.title);};
+      row.append(card);
+    }
+    section.append(title,row);forYouPanel.append(section);
+  }
+}
+if($('navForYou'))$('navForYou').onclick=()=>showForYou();
+$('photoNavigation').addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;if(!button.closest('#navForYou'))hideForYou();if(saiUiMode()==='apple'){const label=button.querySelector('span');const title=$('appTitle');if(title&&label)title.textContent=label.textContent;}},true);
+applyAppleChrome(saiUiMode());
+$('appVersion').textContent='Version '+APP_VERSION;
+$('reloadApp').onclick=async()=>{try{for(const registration of await navigator.serviceWorker?.getRegistrations()||[])await registration.update();}catch{}location.reload();};
+if(!window.SAI_ANDROID)setInterval(async()=>{try{const response=await fetch('/version.json',{cache:'no-store'});const release=await response.json();if(release.version&&release.version!==APP_VERSION){$('updateBanner').hidden=false;$('updateMessage').textContent='New version '+release.version+' is ready. Pause indexing, then reload the app.';}}catch{}},60000);
+let loadController = null;
+let accountId = null;
+let musicFolder = null;
+let photoFolder = null;
+let folderKind = 'audio';
+let folderTrail = [];
+let folderGeneration = 0;
+let transferResolver = null;
+function openFolderPicker(kind) {
+  folderKind = kind;
+  folderTrail = [{ id: '0', name: 'pCloud' }];
+  $('folderPickerTitle').textContent = kind === 'photo' ? 'Choose photo folder' : 'Choose music folder';
+  $('defaultMusicFolder').textContent = kind === 'photo' ? 'Use default photo folders' : 'Use default music folders';
+  $('folderHint').textContent = kind === 'photo' ? 'Photos in subfolders are included. Choosing pCloud includes all supported photos. Favorites, albums and indexes stay saved when you switch folders.' : 'Songs in subfolders are included. This does not move your files.';
+  $('folderPicker').showModal(); browseFolder();
+}
+function openTransferPicker(action) {
+  folderKind = 'photo';
+  folderTrail = [{ id: '0', name: 'pCloud' }];
+  $('folderPickerTitle').textContent = action === 'move' ? 'Move photos to…' : 'Copy photos to…';
+  $('defaultMusicFolder').textContent = 'Use pCloud (root)';
+  $('useMusicFolder').textContent = 'Choose this folder';
+  $('folderHint').textContent = action === 'move' ? 'Selected photos will be moved out of their current pCloud folder. The same originals are relocated, not sent to Trash. Existing destination names are checked before moving.' : 'Selected photos are copied; originals stay where they are.';
+  $('folderPicker').showModal(); browseFolder();
+  return new Promise(resolve => { transferResolver = resolve; });
+}
+$('chooseMusicFolder').onclick = () => openFolderPicker('audio');
+$('choosePhotoFolder').onclick = () => openFolderPicker('photo');
+$('indexAllPhotos').onclick = async () => {
+  if (!state.connected || photoLibrary.indexing || photoLibrary.scopeLoading) return;
+  $('indexAllPhotos').disabled = true;
+  folderKind = 'photo';
+  await selectFolder({id:'0',name:'All pCloud folders'});
+  if (!state.connected || photoFolder?.id !== '0' || photoLibrary.scopeLoading) return;
+  $('indexStatus').textContent = 'All folders: duplicate checksums, similar images and visual search run on the Mac. Faces and English text need this page open on the Mac. Unsupported files are counted but not AI indexed.';
+  await photoLibrary.beginIndexing();
+};
+$('closeFolderPicker').onclick = () => $('folderPicker').close();
+$('folderPicker').addEventListener('close', () => { folderGeneration++; });
+$('folderUp').onclick = () => { if (folderTrail.length > 1) { folderTrail.pop(); browseFolder(); } };
+$('useMusicFolder').onclick = () => selectFolder({ id: folderTrail.at(-1).id, name: folderTrail.map(folder => folder.name).join(' / ') });
+$('defaultMusicFolder').onclick = () => selectFolder(null);
+function folderStorageKey(kind) { return 'sai-photos-' + (kind === 'photo' ? 'photo' : 'music') + '-folder-' + accountId; }
+function restoreFolder(kind) {
+  let folder = null;
+  try {
+    const saved = JSON.parse(localStorage.getItem(folderStorageKey(kind)));
+    if (saved && /^\d{1,20}$/.test(saved.id) && typeof saved.name === 'string') folder = saved;
+  } catch {}
+  return folder;
+}
+function updateFolderLabels() {
+  $('musicFolderLabel').textContent = musicFolder?.name || 'Default music folders';
+  $('photoFolderLabel').textContent = photoFolder?.name || 'Pictures / Automatic Upload / Automatic Folder';
+}
+async function selectFolder(folder) {
+  if (transferResolver) {
+    const resolve = transferResolver; transferResolver = null;
+    $('folderPicker').close();
+    $('useMusicFolder').textContent = 'Use this folder';
+    $('folderPickerTitle').textContent = folderKind === 'photo' ? 'Choose photo folder' : 'Choose music folder';
+    $('defaultMusicFolder').textContent = folderKind === 'photo' ? 'Use default photo folders' : 'Use default music folders';
+    resolve(folder || { id: '0', name: 'pCloud' });
+    return;
+  }
+  const kind = folderKind;
+  const account = accountId;
+  if(!accountId){
+    if(kind==='photo')photoFolder=folder;
+    try{if(folder)localStorage.setItem(folderStorageKey(kind),JSON.stringify(folder));else localStorage.removeItem(folderStorageKey(kind));}catch{}
+    updateFolderLabels();render();return;
+  }
+  if(kind==='photo')enteGallery.reset();
+  state.generation++; loadController?.abort();
+  if (kind === 'photo') {
+    photoLibrary.stop = true;
+    photoLibrary.scopeLoading = true;
+    photoLibrary.semanticScores = null; photoLibrary.searchQuery = '';
+    photoLibrary.view = 'library'; photoLibrary.focus = null;
+    $('search').value = ''; $('photoSearchStatus').textContent = '';
+    if ($('viewer').open) $('viewer').close();
+    photoFolder = folder; state.photo = []; state.limit = galleryBatch;
+    $('photoFolderSummary').textContent = 'Loading selected folder…';
+    updateFolderLabels(); $('folderPicker').close(); render();
+    // Stop the old scope before allowing a new indexing job to start.
+    await api('photo-analysis', {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'stop'})}).catch(()=>{});
+  } else {
+    musicFolder = folder;
+    musicPlayer.savePosition(); musicPlayer.reset(); photoLibrary.change({type:'music-queue',tracks:[]});await api('music-analysis',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'stop'})}).catch(()=>{});
+    state.audio = [];
+  }
+  if (accountId !== account) return;
+  try { if (folder) localStorage.setItem(folderStorageKey(kind), JSON.stringify(folder)); else localStorage.removeItem(folderStorageKey(kind)); } catch {}
+  updateFolderLabels(); $('folderPicker').close(); render();
+  await photoLibrary.change({type:kind === 'photo' ? 'photo-folder' : 'music-folder',folder});
+  if (accountId === account) await loadLibrary();
+}
+async function browseFolder() {
+  const generation = ++folderGeneration;
+  const current = folderTrail.at(-1);
+  $('folderPath').textContent = folderTrail.map(folder => folder.name).join(' / ');
+  $('folderUp').disabled = folderTrail.length <= 1;
+  $('useMusicFolder').disabled = true;
+  $('folderList').replaceChildren(); $('folderStatus').textContent = 'Loading folders…';
+  try {
+    const data = await api('folders?folderid=' + encodeURIComponent(current.id));
+    if (generation !== folderGeneration) return;
+    $('useMusicFolder').disabled = false;
+    $('folderStatus').textContent = data.folders.length ? 'Open a folder, then choose Use this folder.' : 'No subfolders here. You can select this folder.';
+    for (const folder of data.folders) {
+      const li = document.createElement('li'); const button = document.createElement('button');
+      button.textContent = folder.name + ' ›';
+      button.onclick = () => { folderTrail.push(folder); browseFolder(); };
+      li.append(button); $('folderList').append(li);
+    }
+  } catch (error) { if (generation === folderGeneration) $('folderStatus').textContent = error.message; }
+}
+$('photosTab').onclick = () => setTab('photo');
+$('musicTab').onclick = () => setTab('audio');
+let searchDelay,searchRenderDelay;$('search').oninput = () => { state.limit = galleryBatch;photoLibrary.searchQuery=$('search').value;photoLibrary.semanticScores=null;clearTimeout(searchRenderDelay);searchRenderDelay=setTimeout(render,160);clearTimeout(searchDelay);searchDelay=setTimeout(()=>photoLibrary.aiSearch($('search').value),350); };
+$('more').onclick = () => { appendMorePhotos(); };
+$('connect').onclick = async () => {
+  if(!window.SAI_ANDROID){location.href=base+'pcloud-auth?action=start';return;}
+  $('connect').disabled=true;$('status').textContent='Opening pCloud sign-in in your browser…';
+  try{await api('pcloud-auth?action=start',{method:'POST'});$('status').textContent='Complete pCloud sign-in in your browser. You will return here automatically. You can also use Connect with token.';}
+  catch(error){$('status').textContent=error.message;}finally{$('connect').disabled=false;}
+};
+window.addEventListener('sai-auth-changed',async()=>{resetMedia();await checkConnection();});
+let tokenAttempt = 0;
+let authCanonicalOrigin = null;
+$('connectToken').onclick = () => {
+  if(!window.SAI_ANDROID&&authCanonicalOrigin&&location.origin!==authCanonicalOrigin){$('status').textContent='Open '+authCanonicalOrigin+' to sign in. This address differs from the configured web callback; your token has not been sent.';return;}
+  $('tokenStatus').textContent = '';
+  $('tokenTransport').textContent = location.protocol === 'https:' ? 'Your token is sent to this server over HTTPS and kept in an encrypted, HttpOnly session. It is not saved in browser storage.' : 'This local Wi-Fi address uses unencrypted HTTP. Prefer entering the token on your Mac at this address, or use HTTPS. The token is kept in an encrypted, HttpOnly session and is not saved in browser storage.';
+  $('tokenDialog').showModal();$('pcloudToken').focus();
+};
+$('cancelToken').onclick = () => $('tokenDialog').close();
+$('tokenDialog').addEventListener('cancel', event => { if ($('submitToken').disabled) event.preventDefault(); });
+$('tokenDialog').addEventListener('close', () => { tokenAttempt++;$('pcloudToken').value = ''; });
+$('tokenForm').onsubmit = async event => {
+  event.preventDefault(); const attempt = ++tokenAttempt;
+  const token = $('pcloudToken').value.trim(); const tokenType = $('pcloudTokenType').value; const host = $('pcloudTokenRegion').value;
+  $('pcloudToken').value = ''; $('submitToken').disabled = true; $('cancelToken').disabled = true; $('tokenStatus').textContent = 'Verifying with pCloud…';
+  try {
+    await api('pcloud-auth?action=token', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({token,tokenType,host}) });
+    if (attempt !== tokenAttempt) return;
+    $('tokenDialog').close(); resetMedia(); await checkConnection();
+  } catch (error) { if (attempt === tokenAttempt) $('tokenStatus').textContent = error.message; }
+  finally { $('submitToken').disabled = false; $('cancelToken').disabled = false; }
+};
+$('refresh').onclick = loadLibrary;
+$('disconnect').onclick = async () => {
+  try {
+    await api('pcloud-auth?action=logout', { method: 'POST' });
+    try { localStorage.removeItem('sai-last-account'); } catch {}
+    resetMedia();
+    await checkConnection();
+  } catch { $('status').textContent = 'Could not disconnect. Try again.'; }
+};
+async function api(path, options = {}) {
+  const response = await fetch(base + path, { credentials: 'same-origin', cache: 'no-store', ...options });
+  const data = await response.json();
+  if (!response.ok) {const error=new Error(data.error || 'Request failed');error.status=response.status;throw error;}
+  return data;
+}
+function resetMedia() {
+  musicPlayer.reset();
+  state.generation++;
+  loadController?.abort();
+  $('audio').pause(); $('audio').removeAttribute('src'); $('audio').load();
+  if ($('viewer').open) $('viewer').close();
+  state.photo = []; state.audio = []; state.connected = false;
+  enteGallery.reset();photoLibrary.disconnect();
+  $('chooseMusicFolder').disabled = true; $('choosePhotoFolder').disabled = true;
+  if ($('folderPicker').open) $('folderPicker').close();
+  musicFolder = null; photoFolder = null; accountId = null; photoLibrary.scopeLoading = false; updateFolderLabels(); $('photoFolderSummary').textContent = '';
+  $('nowPlaying').textContent = 'Choose a song to play'; render();
+}
+async function checkConnection() {
+  try {
+    const status = await api('pcloud-auth?action=status');
+    state.connected = status.connected;
+    authCanonicalOrigin = status.canonicalOrigin || null;
+    accountId = status.accountId;
+    if (state.connected) { if(!window.SAI_ANDROID&&['localhost','127.0.0.1'].includes(location.hostname))api('mac-index-claim').catch(()=>{});try { localStorage.setItem('sai-last-account',accountId); } catch {} musicFolder=restoreFolder('audio'); photoFolder=restoreFolder('photo');  if(window.SAI_PHOTOS_ONLY&&!photoFolder)photoFolder={id:'0',name:'All pCloud folders'}; await photoLibrary.connect(accountId); for(const [type,field] of [['music-folder','musicFolder'],['photo-folder','photoFolder']]) { if(photoLibrary.data.operations.some(op=>op.type===type)) { if(field==='musicFolder')musicFolder=photoLibrary.meta[field];else photoFolder=photoLibrary.meta[field]; } else { const folder=field==='musicFolder'?musicFolder:photoFolder; if(folder&&!photoLibrary.restoring)photoLibrary.change({type,folder}); } } updateFolderLabels(); }
+    $('chooseMusicFolder').disabled = !state.connected; $('choosePhotoFolder').disabled = !state.connected;
+    $('connect').hidden = state.connected; $('disconnect').hidden = !state.connected;
+    $('connect').disabled = window.SAI_PHOTOS_ONLY?!status.tokenConfigured:!status.configured; $('connectToken').disabled = !status.tokenConfigured; $('connectToken').textContent = state.connected ? 'Change token' : 'Connect with token';
+    $('refresh').disabled = !state.connected;
+    $('status').textContent = state.connected ? 'Connected to pCloud' : (status.configured || status.tokenConfigured) ? 'Connect your pCloud account to get started.' : 'pCloud OAuth setup is pending. Your client ID and private server configuration are needed.';
+    if (state.connected) await loadLibrary(); else render();
+  } catch (error) {
+    if(window.SAI_ANDROID){$('status').textContent=error.message||'Unable to load your account. Check the connection and retry.';$('connectToken').disabled=false;$('connectToken').hidden=false;render();return;}
+    let saved;try{saved=localStorage.getItem('sai-last-account');}catch{}
+    if(saved){accountId=saved;state.connected=true;await photoLibrary.connect(saved);try{state.audio=await listDownloadedSongs(saved);}catch{}setTab('audio');musicPlayer.view='downloads';render();$('status').textContent='Offline · downloaded songs on this device';$('disconnect').hidden=false;$('connect').hidden=true;}
+    else $('status').textContent = 'Cannot reach the server. Keep your Mac awake and try refreshing.';
+  }
+}
+window.saiAuthChanged = () => { checkConnection(); };
+window.saiAuthError = message => { $('status').textContent = message || 'pCloud login could not be completed. Try again.'; };
+async function loadLibrary() {
+  if (!state.connected) return;
+  loadController?.abort(); loadController = new AbortController();
+  const generation = ++state.generation;let cachedPhotos=false;let cachedAudio=false;
+  $('refresh').disabled = true; photoLibrary.scopeLoading = true; photoLibrary.scanError=''; $('indexPhotos').disabled = true; $('indexAllPhotos').disabled=true; $('status').textContent = 'Loading your pCloud library…';
+  try {
+    const folderQueries = {photo: photoFolder ? '&folderid=' + encodeURIComponent(photoFolder.id) : '', audio: musicFolder ? '&folderid=' + encodeURIComponent(musicFolder.id) : ''};
+    if(window.SAI_PHOTOS_ONLY&&state.tab==='photo'){try{const cached=await api('media-list?kind=photo&cached=1'+folderQueries.photo,{signal:loadController.signal});if(generation!==state.generation)return;if(cached.items?.length){const deleted=activeDeletedPhotoIds(photoLibrary.data.operations);state.photo=cached.items.filter(item=>!deleted.has(item.id)).map(item=>({...item,version:normalizeFileVersion(item.version),contentHash:normalizeFileVersion(item.contentHash)}));cachedPhotos=true;render();$('status').textContent='Showing saved photo list · refreshing pCloud…';}}catch{}}
+    if(window.SAI_MUSIC_ENABLED&&state.tab==='audio'){try{const cached=await api('media-list?kind=audio&cached=1'+folderQueries.audio,{signal:loadController.signal});if(generation!==state.generation)return;if(cached.items?.length){state.audio=cached.items.map(item=>({...item,version:normalizeFileVersion(item.version)}));cachedAudio=true;render();}}catch{}}
+    const kinds=window.SAI_MUSIC_ENABLED?[state.tab]:window.SAI_PHOTOS_ONLY?['photo']:['photo','audio'];
+    const results = await Promise.allSettled(kinds.map(kind => api('media-list?kind=' + kind + folderQueries[kind], { signal: loadController.signal })));
+    if (generation !== state.generation) return;
+    const errors = [];
+    for (const [index, kind] of kinds.entries()) {
+      const result = results[index];
+      if (result.status === 'fulfilled') { state[kind] = result.value.items.map(item=>({...item,version:normalizeFileVersion(item.version),contentHash:normalizeFileVersion(item.contentHash)})); if(kind==='photo') {const deleted=activeDeletedPhotoIds([...photoLibrary.data.operations,...photoLibrary.data.pending]);state.photo=state.photo.filter(photo=>!deleted.has(photo.id));const scan=result.value.scan;if(scan?.complete!==false){for(const id of ['indexStatus','visualIndexStatus'])if($(id).textContent.startsWith('Indexing blocked:'))$(id).textContent='';}if(scan?.complete===false)photoLibrary.scanError='Some pCloud folders could not be read: '+scan.unavailableFolders.join(', ')+'. Choose an accessible folder or fix its permissions before indexing all folders.'; $('photoFolderSummary').textContent = scan ? `${state.photo.length.toLocaleString()} photos · ${scan.totalFiles.toLocaleString()} files scanned including subfolders · ${scan.otherFiles.toLocaleString()} other files${scan.missingPaths.length ? ' · Unavailable default folders: '+scan.missingPaths.join(', ') : ''}${scan.complete===false?' · Incomplete scan: '+scan.unavailableFolders.length+' inaccessible folders':''}` : `${state.photo.length.toLocaleString()} ${state.photo.length===1?'photo':'photos'} including subfolders`; } }
+      else { if(!(kind==='photo'&&(cachedPhotos||window.SAI_ANDROID&&state.photo.length))&&!(kind==='audio'&&window.SAI_MUSIC_ENABLED&&(cachedAudio||state.audio.length)))state[kind] = [];if(kind==='audio')$('musicDownloadStatus').textContent='Could not refresh songs: '+result.reason.message+(state.audio.length?' · Showing the saved song list.':' · Choose a folder or retry.'); if(kind==='photo'){photoLibrary.scanError=result.reason.message;$('photoFolderSummary').textContent=photoLibrary.scanError;$('indexStatus').textContent='Indexing blocked: folder scan failed. Refresh to retry.';$('visualIndexStatus').textContent='';} errors.push((kind === 'photo' ? 'Photos: ' : 'Music: ') + result.reason.message); }
+    }
+    $('status').textContent = `Connected · ${state.photo.length} ${state.photo.length===1?'photo':'photos'}${window.SAI_PHOTOS_ONLY?'':' · '+state.audio.length+' songs'}${errors.length ? ' · ' + errors.join(' · ') : ''}`;
+    render();
+  } catch (error) {
+    if (generation !== state.generation || error.name === 'AbortError') return;
+    $('status').textContent = error.message;
+  } finally { if (generation === state.generation) { $('refresh').disabled = false; photoLibrary.scopeLoading = false; photoLibrary.sections(); } }
+}
+function setTab(tab) {
+  if(window.SAI_PHOTOS_ONLY&&!window.SAI_MUSIC_ENABLED)tab='photo';
+  state.tab = tab; state.limit = galleryBatch; clearTimeout(searchDelay); photoLibrary.searchQuery = ''; photoLibrary.semanticScores = null; $('search').value = '';
+  $('photosTab').classList.toggle('active', tab === 'photo'); $('musicTab').classList.toggle('active', tab === 'audio');
+  $('photosTab').setAttribute('aria-pressed', String(tab === 'photo')); $('musicTab').setAttribute('aria-pressed', String(tab === 'audio'));
+  $('photosPanel').hidden = tab !== 'photo'; $('musicPanel').hidden = tab !== 'audio';
+  $('search').placeholder = tab === 'photo' ? 'Search photos, people and songs' : 'Search songs';document.body.classList.toggle('music-active',tab==='audio');if(window.SAI_MUSIC_ENABLED){$('navMusic')?.setAttribute('aria-current',String(tab==='audio'));for(const id of ['galleryPageTitle','galleryDiscovery','galleryMemories'])if($(id))$(id).hidden=tab!=='photo';}render();if(window.SAI_MUSIC_ENABLED){if(tab!=='audio')musicPlayer.closeFullscreen();musicPlayer.playerUI();}if(window.SAI_MUSIC_ENABLED&&state.connected&&!state[tab].length)loadLibrary();
+}
+function renderSearchExtras(){
+  const box=$('searchExtras');if(!box)return;
+  const searchView=!document.body.classList.contains('music-active')&&(window.SAI_PHOTOS_ONLY?$('galleryPageTitle')?.textContent==='Search':state.tab==='photo');
+  box.hidden=!searchView||state.tab!=='photo';
+  if(box.hidden)return;
+  const query=$('search').value.trim().toLowerCase();
+  box.replaceChildren();
+  const addSection=label=>{const heading=document.createElement('h3');heading.className='search-extras-title';heading.textContent=label;box.append(heading);const row=document.createElement('div');row.className='search-extras-row';box.append(row);return row;};
+  if(query){
+    const matches=(photoLibrary.people||[]).filter(person=>person.name&&person.name.toLowerCase().includes(query)).slice(0,4);
+    if(matches.length){const row=addSection('People');for(const person of matches){const chip=document.createElement('button');chip.type='button';const name=document.createElement('span');name.textContent='👤 '+person.name;const count=document.createElement('span');count.className='search-extras-note';count.textContent=person.photos.size+' photos';chip.append(name,count);chip.onclick=()=>{photoLibrary.filters={ids:[...person.photos]};photoLibrary.filterTitle=person.name;$('search').value='';photoLibrary.searchQuery='';photoLibrary.semanticScores=null;photoLibrary.render();window.scrollTo({top:0,behavior:'smooth'});};row.append(chip);}}
+  }
+  if(window.SAI_MUSIC_ENABLED){
+    const meta=photoLibrary.meta||{};let all=[];try{all=[...musicPlayer.allTracks().values()];}catch{all=[];}
+    const liked=track=>Boolean(meta.musicLikes&&meta.musicLikes[track.id]);
+    const history=track=>meta.musicHistory&&meta.musicHistory[track.id];
+    const addSongs=(label,songs)=>{if(!songs.length)return;const row=addSection(label);for(const song of songs){const button=document.createElement('button');button.type='button';const name=document.createElement('span');name.textContent='▶ '+song.name;button.append(name);const note=document.createElement('span');note.className='search-extras-note';note.textContent=liked(song)?'♥ liked':history(song)?'played':'song';button.append(note);button.onclick=()=>{gallerySelection.mode=false;gallerySelection.selected.clear();gallerySelection.refresh();setTab('audio');musicPlayer.play(song,songs);};row.append(button);}};
+    const byRecent=(a,b)=>(history(b)?.playedAt||0)-(history(a)?.playedAt||0);
+    if(query){
+      if(/liked|favorite/.test(query))addSongs('Liked songs',all.filter(liked).slice(0,12));
+      else if(/recent|played|history/.test(query))addSongs('Recently played',all.filter(history).sort(byRecent).slice(0,12));
+      else addSongs('Music · song name matches',all.filter(track=>track.name.toLowerCase().includes(query)).slice(0,8));
+    }else{
+      addSongs('Liked songs',all.filter(liked).slice(0,6));
+      addSongs('Recently played',all.filter(history).sort(byRecent).slice(0,6));
+    }
+  }
+  if(!box.childElementCount)box.hidden=true;
+}
+function groupKey(item, zoom){
+  if (!item.addedAt) return zoom === 'all' ? '' : 'Undated photos';
+  const date = new Date(item.addedAt);
+  if (zoom === 'years') return String(date.getFullYear());
+  if (zoom === 'months') return date.toLocaleDateString(undefined,{year:'numeric',month:'long'});
+  if (zoom === 'all') return '';
+  return date.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
+}
+function appendPhotoCards(items, from, to, query, lastPhotoDay) {
+  const grid = $('photoGrid');
+  for (const item of items.slice(from, to)) {
+    if (photoLibrary.view === 'library' && !query && ['newest','oldest'].includes($('sortPhotos').value)) {
+      const day = groupKey(item, state.libraryZoom);
+      if (day !== lastPhotoDay) { lastPhotoDay = day; if (day) { const heading=document.createElement('h3'); heading.className='photo-day'; heading.textContent=day; grid.append(heading); } }
+    }
+    const button = document.createElement('button');
+    button.className = 'photo-tile';
+    const image = document.createElement('img'); image.alt = item.fileName; image.loading = 'lazy'; image.decoding = 'async';
+    photoLibrary.loadTile(item, image);
+    image.onerror = () => { image.alt = 'Preview unavailable: ' + item.fileName; };
+    const label = document.createElement('span'); label.textContent = formatSize(item.size); label.title = 'Original file size: '+Number(item.size||0).toLocaleString()+' bytes';
+    button.append(image, label); button.onclick = () => photoLibrary.open(item, items);
+    const card = document.createElement('div'); card.className='photo-card'; card.dataset.photoId=item.id; card.dataset.mediaType=item.mediaType||"photo"; card.append(button);
+    const remove = photoLibrary.personRemoval(item); if (remove) card.append(remove);
+    grid.append(card);
+  }
+  return lastPhotoDay;
+}
+function appendMorePhotos() {
+  if (state.tab !== 'photo') return;
+  const query = $('search').value.trim().toLowerCase();
+  const items = sortPhotos(displayPhotoResults(query), $('sortPhotos').value);
+  const from = state.limit; state.limit += galleryBatch;
+  const headings = $('photoGrid').querySelectorAll('.photo-day');
+  appendPhotoCards(items, from, state.limit, query, headings.length ? headings[headings.length-1].textContent : '');
+  $('more').hidden = items.length <= state.limit;
+}
+function displayPhotoResults(query){return photoLibrary.filter(state.photo,query);}
+function render() {
+  if(window.SAI_PHOTOS_ONLY)document.body.classList.toggle('cleanup-view',['duplicates','similar','large'].includes(photoLibrary.view));
+  musicPlayer.applyCloudDeletes();if(!(['duplicates','similar','large'].includes(photoLibrary.view)&&state.tab==='photo'))photoLibrary.releaseGrid();
+  const query = (state.tab === 'photo' ? $('search').value : $('musicSearch').value).trim().toLowerCase();
+  $('search').hidden = state.tab !== 'photo';
+  const items = state.tab === 'photo' ? sortPhotos(displayPhotoResults(query),$('sortPhotos').value) : state.tab === 'audio' ? musicPlayer.items(query) : [];
+  gallerySelection.scope([photoLibrary.account,photoLibrary.view,photoLibrary.focus,query,photoFolder?.id||'default',JSON.stringify(photoLibrary.filters)].join(':'));$('galleryToolbar').hidden=state.tab!=='photo';libraryZoomBar.hidden=!(state.tab==='photo'&&photoLibrary.view==='library'&&!query&&['newest','oldest'].includes($('sortPhotos').value));
+  $('count').textContent = `${items.length} ${state.tab === 'photo' ? items.length === 1 ? 'photo' : 'photos' : items.length === 1 ? 'song' : 'songs'}`;
+  $('empty').hidden = items.length > 0;
+  $('empty').querySelector('h2').textContent = state.tab==='photo'&&photoLibrary.scanError?'Photo library could not load':state.tab === 'photo' ? 'Your photos, together' : 'Your music, together';
+  $('empty').querySelector('p').textContent = !state.connected ? window.SAI_PHOTOS_ONLY?'Connect pCloud to bring your photos together.':'Connect pCloud to browse your photos and music.' : state.tab==='photo'&&photoLibrary.scanError?photoLibrary.scanError+' · Open Settings → Backup to choose a folder or refresh.': $('search').value ? 'No matches. Try another search.' : 'No supported files found in your configured pCloud folders.';
+  $('photoGrid').replaceChildren(); $('songs').replaceChildren();
+  $('more').hidden = state.tab !== 'photo' || items.length <= state.limit;
+  if (state.tab === 'photo') appendPhotoCards(items, 0, state.limit, query, '');
+  photoLibrary.sections();
+  gallerySelection.refresh();
+  if(state.tab==='photo')enteGallery.render();
+  if (state.tab === 'audio') musicPlayer.render(items);
+  renderSearchExtras();
+  
+}
+if(window.SAI_MUSIC_ENABLED){
+ document.body.classList.add('music-enabled');const nav=$('photoNavigation'),music=document.createElement('button');music.id='navMusic';music.setAttribute('aria-label','Music');music.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5.6l10-2.1V16"/><circle cx="6.6" cy="18" r="2.5"/><circle cx="16.6" cy="16" r="2.5"/></svg><span class="nav-label">Music</span>';nav.insertBefore(music,$('navSearch'));music.onclick=()=>{gallerySelection.mode=false;gallerySelection.selected.clear();gallerySelection.refresh();setTab('audio');window.scrollTo({top:0,behavior:'smooth'});};
+ nav.addEventListener('click',event=>{const button=event.target.closest('button');if(button&&button.id!=='navMusic')setTab('photo');},true);
+}
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+if(window.SAI_MUSIC_ENABLED&&!window.SAI_PHOTOS_ONLY)setTab('audio');
+checkConnection();
+
+setInterval(()=>{
+  if(!state.connected||document.visibilityState!=='visible')return;
+  let changed=false;
+  for(const [type,field] of [['music-folder','musicFolder'],['photo-folder','photoFolder']]) {
+    const has=photoLibrary.data.operations.some(op=>op.type===type);
+    const current=field==='musicFolder'?musicFolder:photoFolder;
+    if(has&&JSON.stringify(current)!==JSON.stringify(photoLibrary.meta[field])) {
+      if(field==='musicFolder'){musicFolder=photoLibrary.meta[field];state.audio=[];}
+      else{photoFolder=photoLibrary.meta[field];state.photo=[];photoLibrary.stop=true;photoLibrary.semanticScores=null;photoLibrary.view='library';photoLibrary.focus=null;api('photo-analysis',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'stop'})}).catch(()=>{});if($('viewer').open)$('viewer').close();}
+      changed=true;
+    }
+  }
+  if(changed){updateFolderLabels();loadLibrary();}
+},5000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&state.connected)loadLibrary();});
+const autoIndexKick=async()=>{try{if(document.visibilityState!=='visible')return;await photoLibrary.autoResumeIndex();}catch{}};
+setTimeout(autoIndexKick,12000);setInterval(autoIndexKick,600000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(autoIndexKick,5000);});

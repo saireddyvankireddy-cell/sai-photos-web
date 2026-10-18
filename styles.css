@@ -1,0 +1,607 @@
+*{box-sizing:border-box}body{margin:0;background:#f5f6fa;color:#182435;font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input{font:inherit}button{border:1px solid #d9dfe9;border-radius:14px;padding:10px 14px;background:white;color:#182435;cursor:pointer;min-height:40px}button:disabled{opacity:.45;cursor:default}button:focus-visible,input:focus-visible{outline:3px solid #8baaff;outline-offset:3px}.primary,.tabs .active{background:#285bdd;color:white;border-color:#285bdd}.shell{max-width:1200px;margin:auto;padding:36px 28px 80px}header{display:flex;align-items:center;gap:12px;flex-wrap:wrap}header>div{flex:1}h1{font-size:26px;letter-spacing:-.8px;margin:0}.eyebrow{font-size:11px;letter-spacing:2px;color:#6b7890;margin:0 0 8px}.connection{display:flex;align-items:center;gap:18px;margin:24px 0;color:#607087}.connection p{flex:1;font-size:14px;line-height:1.5}.tabs{display:flex;gap:8px;padding:6px;background:#e9edf5;border-radius:20px}.tabs button{flex:1;border:0;background:transparent}.tabs .active{box-shadow:0 2px 8px #285bdd28}.tools{display:flex;align-items:center;gap:10px;margin:18px 0}.sort-controls{display:flex;align-items:center;gap:8px;font-size:13px;color:#6b7890}.sort-controls select{padding:6px 10px;border-radius:8px;border:1px solid #dde3ed;background:white;font-size:12px;cursor:pointer}input{width:100%;min-width:0;max-width:480px;padding:12px 16px;border:1px solid #dde3ed;border-radius:16px;background:white}.tools span{margin-left:auto;color:#6b7890;white-space:nowrap;font-size:13px}.empty{text-align:center;padding:44px 16px;color:#607087}.empty h2{color:#182435;font-size:20px}.empty-symbol{font-size:60px;color:#285bdd}.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}.photo-tile{padding:0;overflow:hidden;text-align:left;border:0}.photo-tile img{display:block;width:100%;aspect-ratio:1;object-fit:cover;background:#e6eaf3}.photo-tile span{display:block;padding:10px;font-size:12px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.songs{list-style:none;padding:0}.song{display:flex;width:100%;text-align:left;align-items:center;gap:16px;margin-bottom:10px;padding:18px}.song .note{font-size:26px;color:#285bdd}.song .name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.song .size{font-size:12px;color:#6b7890}.player{position:sticky;bottom:16px;border:1px solid #d9dfe9;border-radius:20px;padding:16px;background:#fff;box-shadow:0 8px 30px #18243515}audio{width:100%}.player p{font-size:14px;margin:0 0 10px}#more{display:block;margin:24px auto}dialog{max-width:94vw;max-height:94dvh;border:0;border-radius:20px;background:#152031;color:white;padding:18px}dialog::backdrop{background:#000a}dialog img{display:block;max-width:85vw;max-height:75dvh;object-fit:contain}.close{display:block;margin:0 0 12px auto}dialog p{max-width:85vw;overflow-wrap:anywhere}[hidden]{display:none!important}@media(max-width:600px){.shell{padding:24px 16px max(40px,env(safe-area-inset-bottom))}h1{font-size:22px}.photo-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.photo-tile span{padding:6px;font-size:10px}.tools{gap:8px}.connection{margin:14px 0}.empty{padding:60px 6px}header button{padding:10px 12px;font-size:13px}}
+
+.music-folder{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:18px;background:white;border:1px solid #d9dfe9;border-radius:16px}.music-folder>div{flex:1;min-width:0}.music-folder p{margin:6px 0 0;overflow-wrap:anywhere;font-size:14px}#folderPicker{background:#fff;color:#182435;width:560px}.folder-header,.folder-actions{display:flex;align-items:center;gap:12px;justify-content:space-between}.folder-header h2{font-size:20px;margin:0}#folderPath{overflow-wrap:anywhere;color:#607087}.folder-list{list-style:none;padding:0;max-height:40dvh;overflow:auto}.folder-list button{width:100%;text-align:left;margin:4px 0;overflow-wrap:anywhere}.folder-hint{font-size:13px;color:#607087}
+
+.photo-sections{display:flex;gap:8px;overflow-x:auto;padding:0 0 10px}.photo-sections button{white-space:nowrap;font-size:14px}.photo-sections .active{background:#182435;color:white}.photo-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0}.photo-actions button{font-size:13px}.photo-actions span,#indexStatus{color:#607087;font-size:13px;line-height:1.5}.photo-card{position:relative;min-width:0;content-visibility:auto;contain-intrinsic-size:138px;contain-intrinsic-size:auto 138px}.photo-card .photo-tile{width:100%}.heart{font-size:26px;padding:6px 12px;line-height:1;color:#ec4564}.tile-heart{position:absolute;top:6px;right:6px;border:0;background:#fffffff0;min-height:36px;border-radius:50%;width:36px;padding:4px;font-size:24px}.collection-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;margin:20px 0}.collection-card{display:flex;flex-direction:column;gap:8px;text-align:left;min-width:0}.collection-card img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px}.collection-card span{font-size:12px;color:#607087}#collectionHeading{display:flex;gap:12px;align-items:center}#collectionTitle{font-size:17px}#viewer{position:fixed;inset:0;margin:0;width:100vw;height:100dvh;max-width:none;max-height:none;border-radius:0;padding:0;overflow:hidden;background:#0b1018;color:white}#viewer button,#viewer select{background:#253041;color:white;border-color:#39455a;font:inherit;border-radius:12px;min-height:44px}.viewer-content{position:relative;width:100%;height:100%;display:grid;place-items:center}.viewer-heart{position:absolute;top:20px;right:20px;z-index:10;background:rgba(0,0,0,0.3);color:white;border:0;border-radius:50%;width:48px;height:48px;font-size:24px;backdrop-filter:blur(4px);cursor:pointer}.viewer-heart[aria-pressed=true]{color:#ff375f}.viewer-header{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;background:#0b1018dc;z-index:2}.image-stage{position:absolute;inset:85px 0 155px;overflow:auto;display:flex;align-items:center;touch-action:none}.image-stage img{display:block;margin:auto;max-width:none;max-height:none;object-fit:contain;flex-shrink:0}.viewer-footer{position:absolute;bottom:0;left:0;right:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:#0b1018ee}.viewer-footer p{margin:0 0 8px;max-width:100%;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.viewer-tools{display:flex;gap:8px;align-items:center;overflow-x:auto}.viewer-tools button{padding:8px 14px;white-space:nowrap}#viewerStatus{color:#98a9c4}#addToAlbum{max-width:180px;padding:8px}.viewer-header span{font-size:13px;color:#b0bcd0}@media(max-width:600px){.photo-sections button{font-size:12px;padding:10px}.image-stage{inset:85px 0 165px}.collection-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.viewer-tools{gap:5px}.viewer-tools button{padding:8px 12px}}
+
+#nameDialog{background:white;color:#182435;width:400px}#nameDialog input{margin-bottom:20px}
+
+#deletePhotoDialog{background:white;color:#182435;width:460px}#deletePhotoDialog p{white-space:normal;max-width:100%;line-height:1.5}#deletePhotoName{font-weight:600;overflow-wrap:anywhere}.danger,#viewer button.danger{background:#b52e40;color:white;border-color:#b52e40}
+
+#musicPanel{border-radius:24px;padding:20px;background:#111b1a;color:#ecf5ef}.music-sections{display:flex;gap:6px;overflow:auto;margin:16px 0}.music-sections button{white-space:nowrap;background:#22312d;color:#d2e1d8;border:0;font-size:13px}.music-sections .active{background:#29c96e;color:#082412}.music-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.music-actions button{background:#293a32;color:#ecf5ef;border:0;font-size:13px}.music-actions span{color:#9cbaa8;font-size:12px}.music-layout{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:20px}.music-queue{border-left:1px solid #2d3c35;padding-left:16px;margin:20px 0}.music-queue h3{font-size:15px}.music-queue p,.music-queue span{color:#9db6a5;font-size:12px}.music-queue ol{padding:0;list-style:none}.music-queue button{background:transparent;color:#d2e1d8;border:0;font-size:12px;text-align:left;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:10px}.music-track{display:flex;align-items:center;border-radius:14px;padding:8px 10px;margin-bottom:8px;background:#1b2923;gap:6px}.music-track.is-playing{outline:1px solid #32c676}.music-track .song{flex:1;min-width:0;margin:0;padding:10px 4px;background:transparent;color:#ecf5ef;border:0}.music-track .song .name{white-space:normal;overflow-wrap:anywhere;font-size:14px}.music-track .song .note{color:#39d37c}.music-track .song .size{color:#9aafa1}.music-track .heart{color:#39d37c;background:transparent;border:0}.track-actions{display:flex;gap:6px;align-items:center}.track-actions button,.track-actions select{font-size:11px;max-width:120px;padding:8px;color:#d4e6db;background:#293b31;border:0;border-radius:10px;min-height:44px}.music-time{display:block;font-size:11px;color:#9aafa1;margin-top:6px}.music-now{display:flex;align-items:center;gap:14px}.music-now>div:nth-child(2){flex:1;min-width:0}.music-art{width:50px;height:50px;background:#32c676;color:#092010;border-radius:12px;display:grid;place-items:center;font-size:28px}.music-now p{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.music-transport{display:flex;justify-content:center;gap:10px;margin:16px 0}.music-transport button{background:#26362f;color:#ecf5ef;border:0;font-size:12px}.music-transport button[aria-pressed=true]{color:#32dd7d}#toggleMusic{border-radius:50%;width:48px;background:#32c676;color:#092010;font-size:20px}.music-extras{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px;font-size:12px}.music-extras select,.music-extras button{background:#26362f;color:#d7e5db;border:0;border-radius:10px;padding:8px;min-height:44px;font-size:12px}#musicPanel .player{background:#15231c;border-color:#314639;color:#edf5ef;bottom:16px;z-index:1}#musicPanel audio{color-scheme:dark}#musicPanel .music-folder{background:#22312b;border-color:#314639}#musicPanel .music-folder button{background:#2c4236;color:#e4f1e9;border:0}#musicPlaylistCards .collection-card{background:#22372a;color:#edf5ef;border-color:#2d4f39}#playlistHeading{display:flex;align-items:center;gap:12px;margin-top:20px}#playlistTitle{font-size:17px}#likeCurrentSong{background:transparent;border:0;color:#39d37c}@media(max-width:760px){#musicPanel{padding:14px}.music-layout{grid-template-columns:1fr}.music-queue{border-left:0;border-top:1px solid #2d3c35;padding:8px 0;max-height:220px;overflow:auto}.music-track{flex-wrap:wrap}.track-actions{width:100%;justify-content:flex-end}.music-transport{gap:6px}.music-transport button{padding:10px;font-size:11px}.music-transport #previousSong,.music-transport #nextSong{font-size:22px}.music-extras{gap:8px}.music-now{gap:10px}.music-now p{font-size:13px}}
+
+.mini-toggle,.mini-expand{display:none}#musicPlaylistCards .collection-card span{color:#a6c2b0}@media(max-width:760px){#musicPanel .player:not(.is-expanded) .music-transport,#musicPanel .player:not(.is-expanded) audio,#musicPanel .player:not(.is-expanded) .music-extras{display:none}#musicPanel .player{padding:12px}.music-now{gap:6px}.music-art{width:38px;height:38px;flex-shrink:0}.music-now p{font-size:12px}.music-now .heart{padding:6px;min-width:36px}.mini-toggle,.mini-expand{display:block;background:#26362f;color:#d7e5db;border:0;padding:6px;min-width:36px;min-height:44px}.player.is-expanded .mini-toggle{display:none}}
+
+.track-actions .danger,.music-extras .danger{color:#ffb4b4;border-color:#854040;background:#351c22}
+
+#tokenDialog{background:white;color:#182435;width:480px}#tokenForm label{display:block;margin-top:14px;margin-bottom:6px}#tokenForm input,#tokenForm select{width:100%;padding:12px;border:1px solid #d9dfe9;border-radius:12px;font:inherit}#tokenTransport{font-size:13px;color:#607087}#tokenStatus{color:#a33838}
+
+.music-search{display:block;font-size:14px;margin:12px 0}.music-search input{display:block;width:100%;padding:13px;margin-top:6px;border:1px solid #d9dfe9;border-radius:14px}#musicDownloadStatus,#sleepMusicStatus{font-size:13px;color:#607087}#sleepMusicStatus{color:#cbd7df}.track-actions{flex-wrap:wrap}
+
+header>div{min-width:140px}@media(max-width:760px){.player.is-expanded{max-height:60dvh;overflow-y:auto}}
+
+#songPlaylistDialog{width:460px;background:white;color:#182435}#songPlaylistForm label{display:block;margin:12px 0 6px}#songPlaylistForm input,#songPlaylistForm select{width:100%;padding:12px;border:1px solid #d9dfe9;border-radius:12px;font:inherit}#songPlaylistStatus{font-size:14px;color:#a33838}
+
+.cloud-sync{display:flex;align-items:center;gap:12px;padding:14px 16px;margin-bottom:18px;border:1px solid #bad6c4;background:#edf7f0;border-radius:14px}.cloud-sync p{flex:1;margin:0;font-size:14px;line-height:1.5}.cloud-sync button{flex-shrink:0}.cloud-sync.sync-warning{background:#fff2d9;border-color:#db9f40;color:#643d08}@media(max-width:600px){.cloud-sync{flex-wrap:wrap}}
+
+#photoSearchStatus,#visualIndexStatus{font-size:13px;color:#607087}.cleanup-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.cleanup-group{background:white;border:1px solid #d9dfe9;border-radius:18px;margin:16px 0;padding:16px}.cleanup-group h3{font-size:15px}.cleanup-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:14px}.cleanup-photo .photo-tile{width:100%}.cleanup-photo img{width:100%;aspect-ratio:1;object-fit:cover}.cleanup-photo label{display:flex;gap:8px;align-items:center;font-size:13px;margin:9px 0}.cleanup-photo input{width:20px;height:20px}.cleanup-photo p{font-size:12px;overflow-wrap:anywhere}#cleanupHint{color:#607087;font-size:14px;line-height:1.5}
+
+.person-face-preview{position:relative;width:100%;aspect-ratio:1;overflow:hidden;border-radius:12px;background:#e6eaf3}.person-face-preview img{border-radius:0}.collection-card strong{font-weight:700}
+
+#settingsDialog{background:#f5f6fa;color:#182435;width:720px;max-height:88dvh;padding:24px;overflow:auto}#settingsDialog .settings-header{display:flex;justify-content:space-between;align-items:center;gap:16px;position:sticky;top:-24px;background:#f5f6fa;z-index:2;padding:12px 0}#settingsDialog h2{margin:0}#settingsDialog h3{font-size:16px;margin:0 0 8px}#settingsDialog p,#settingsDialog li{font-size:14px;line-height:1.55;max-width:none;overflow-wrap:anywhere}#settingsDialog li{margin-bottom:10px}.settings-card{background:white;border:1px solid #d9dfe9;border-radius:16px;padding:16px;margin:12px 0}.settings-muted,#settingsVersion{color:#607087}#settingsDialog details{border-top:1px solid #d9dfe9;padding:14px 0}#settingsDialog summary{cursor:pointer;font-weight:650;min-height:44px;display:list-item;line-height:1.5}#settingsDialog #settingsReleases details{padding-left:12px}#settingsAddress{font-weight:600}@media(max-width:600px){#settingsDialog{padding:16px;width:94vw}#settingsDialog .settings-header{top:-16px}.settings-card{padding:12px}}
+
+.cleanup-folder{color:#607087;line-height:1.45;margin:8px 0 0;font-size:12px;overflow-wrap:anywhere}#cleanupDeleteFiles{max-height:25dvh;overflow:auto;padding-left:22px;font-size:13px;line-height:1.5}#cleanupDeleteFiles li{margin:6px 0;overflow-wrap:anywhere}
+
+.person-remove{width:100%;font-size:12px;margin-top:5px;padding:8px;min-height:38px}#smartAlbumDialog{background:#fff;color:#182435;width:560px}#smartAlbumDialog label{display:block;margin:14px 0 6px}#smartAlbumDialog p{font-size:14px;line-height:1.5}#musicSmartStatus,#musicIndexStatus{color:#b5c9bb;font-size:13px;line-height:1.5}#personRemoveDialog{background:#fff;color:#182435}
+
+/* Photo timeline shared by the web gallery and the Android companion. */
+.photo-day{grid-column:1/-1;font-size:16px;font-weight:650;margin:22px 0 6px;color:#253c35}.photo-grid{gap:6px}.photo-tile{border-radius:6px}.photo-card{border-radius:6px}.photo-card .heart{box-shadow:0 2px 8px #0002}
+#sharedIndexStatus{font-size:13px;color:#527365;line-height:1.6}.index-mode{display:block;margin:12px 0;color:#52635c;font-size:13px}.index-mode select{display:block;width:100%;margin-top:8px;background:#fff;border:1px solid #dfe8e2;border-radius:12px;padding:12px;font:inherit;color:#183e2c}
+#photoNavigation{position:fixed;bottom:0;left:0;right:0;z-index:8;display:flex;justify-content:space-around;background:#ffffffed;border-top:1px solid #e1e9e4;padding:8px 4px max(10px,env(safe-area-inset-bottom))}#photoNavigation[hidden]{display:none}#photoNavigation button{display:flex;flex-direction:column;align-items:center;gap:4px;border:0;border-radius:12px;font-size:23px;background:transparent;padding:6px 10px;min-width:54px;color:#728078}#photoNavigation span{font-size:11px}#photoNavigation [aria-current=true]{color:#138348;background:#edf8f0}
+.photos-only{background:#fafcfb;color:#18372a}.photos-only .shell{padding:24px 14px 112px}.photos-only h1{font-size:24px;letter-spacing:-.6px}.photos-only .eyebrow{color:#46916a;letter-spacing:1.4px}.photos-only header button{padding:8px 12px;font-size:12px;min-height:36px}.photos-only .tabs,.photos-only #musicPanel,.photos-only #player{display:none!important}.photos-only .connection{margin:16px 0;font-size:12px}.photos-only .connection p{font-size:12px}.photos-only .tools{margin:16px 0}.photos-only .tools input{background:#eef4ef;border-color:transparent;border-radius:16px}.photos-only .photo-folder{background:#fff;border:1px solid #e3ebe5;border-radius:18px}.photos-only .photo-sections{overflow-x:auto;flex-wrap:nowrap;gap:6px;padding-bottom:6px}.photos-only .photo-sections button{white-space:nowrap;padding:9px 13px;min-height:38px;border-radius:24px;font-size:12px}.photos-only .photo-sections .active{background:#17834a;color:#fff;border-color:#17834a}.photos-only .primary{background:#17834a;border-color:#17834a}.photos-only .photo-actions{gap:7px;flex-wrap:wrap}.photos-only .photo-actions button{padding:9px 12px;font-size:12px;min-height:38px}.photos-only .photo-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}.photos-only .photo-day{margin:18px 0 7px;font-size:15px}.photos-only .photo-tile{border-radius:3px}.photos-only .photo-tile img{aspect-ratio:1;object-fit:cover}.photos-only .photo-tile span{font-size:10px}.photos-only .photo-card .heart{font-size:17px;min-height:30px;width:30px;height:30px;right:3px;top:3px}#indexStatus:empty,#visualIndexStatus:empty,#sharedIndexStatus:empty,#photoSearchStatus:empty,#photoSync:empty,.music-folder:has(.photo-folder-hint:only-child:empty){display:none}
+.photos-only .collection-cards{gap:10px;grid-template-columns:repeat(3,minmax(0,1fr))}.photos-only .collection-card strong{font-size:13px}.photos-only .collection-card>span{font-size:11px}.photos-only .collection-card{border-radius:16px}.photos-only #indexStatus,.photos-only #visualIndexStatus{font-size:12px;line-height:1.6}.photos-only #viewer{background:#101713}.photos-only #viewer button{font-size:13px}.photos-only #appVersion{color:#789084;font-size:11px}
+
+.photos-only header .eyebrow{display:none}.photos-only .connection{margin:12px 0}.photos-only #cloudSyncPanel{padding:10px 12px;margin:10px 0;font-size:12px}.photos-only .photo-controls{margin:12px 0;border:1px solid #e0e9e2;border-radius:14px;background:#fff}.photos-only .photo-controls summary{cursor:pointer;padding:12px 14px;font-size:13px;font-weight:600;color:#426a52}.photos-only #photoControlContent{padding:0 12px 14px}.photos-only #photoControlContent .music-folder{padding:12px;gap:8px}.photos-only .photo-account-actions{display:flex;gap:8px;padding-top:14px;border-top:1px solid #edf1ee;margin-top:12px}.photos-only .photo-account-actions button{font-size:12px}.photos-only #albumsSection,.photos-only #peopleSection{display:none}.photos-only:not(.cleanup-view) #duplicatesSection,.photos-only:not(.cleanup-view) #similarSection,.photos-only:not(.cleanup-view) #largeSection{display:none}
+
+.gallery-toolbar{display:flex;gap:10px;justify-content:space-between;margin:12px 0}.gallery-toolbar select{min-width:0;border:1px solid #dfe7e1;border-radius:12px;background:#fff;padding:10px;font:inherit;color:inherit}.gallery-toolbar button{padding:9px 15px}.selection-toolbar{position:sticky;top:0;z-index:7;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#e8f6ec;border:1px solid #b6d4c0;border-radius:14px;padding:10px;margin:10px 0}.selection-toolbar[hidden]{display:none}.selection-toolbar p{width:100%;margin:0;font-size:12px;color:#52715c}.selection-toolbar button{font-size:12px;padding:8px;min-height:36px}.selecting{user-select:none;-webkit-user-select:none}.photo-card.is-selected,.cleanup-photo.is-selected{outline:3px solid #168847;outline-offset:-3px;position:relative}.is-selected::after{content:'✓';position:absolute;top:6px;right:6px;background:#168847;color:#fff;border-radius:50%;width:24px;height:24px;display:grid;place-items:center;pointer-events:none}.photos-only #sharedIndexStatus{font-size:11px;margin:6px 0}.photos-only #settingsDialog{width:100%;height:100%;max-width:100vw;max-height:100dvh;inset:0;margin:0;border-radius:0;background:#fafcfb;color:#18372a;overflow:auto;padding:16px 12px}.photos-only #settingsDialog .settings-card{padding:12px;border-radius:16px;background:#edf3ee;border:0}.photos-only #settingsDialog select{width:100%;padding:12px;border-radius:12px;border:1px solid #cddbd2;background:#fff;color:#18372a;margin:8px 0 16px;font:inherit}.photos-only #settingsDialog #photoControls{border:0;background:transparent;margin:0}.photos-only #settingsDialog #photoControls summary{display:none}.photos-only #settingsDialog #photoControlContent{padding:0}.theme-dark{background:#151515!important;color:#f5f5f5!important}.theme-dark .shell,.theme-dark #photosPanel{background:#151515;color:#f5f5f5}.theme-dark .photo-day{color:#eee}.theme-dark button,.theme-dark select,.theme-dark input{background:#252525;color:#eee;border-color:#383838}.theme-dark .tools input{background:#232323!important;color:#eee}.theme-dark #photoNavigation{background:#202020f0;border-color:#363636}.theme-dark #photoNavigation button{color:#bbb}.theme-dark #photoNavigation [aria-current=true]{background:#203d2c;color:#2ce569}.theme-dark #settingsDialog{background:#151515!important;color:#f5f5f5!important}.theme-dark #settingsDialog .settings-card{background:#232323!important;color:#eee}.theme-dark #settingsDialog select{background:#303030!important;color:#eee!important;border-color:#444!important}.theme-dark #cloudSyncPanel{background:#21362a;color:#bcd8c5;border-color:#375843}.theme-dark .gallery-toolbar select{background:#252525}.theme-dark .selection-toolbar{background:#213b2a;border-color:#3d7650}.theme-dark .collection-card{background:#242424;color:#eee}.theme-dark .settings-muted,.theme-dark #sharedIndexStatus{color:#aaa}
+
+.settings-menu{display:flex;flex-direction:column;gap:12px;margin:20px 0}.settings-menu button{text-align:left;border:0;border-radius:18px;padding:14px 16px;background:#e9f0eb;font-size:16px;font-weight:600}.settings-menu button::after{content:'›';float:right;color:#7b8d80}.theme-dark .settings-menu button{background:#242424;color:#eee}.settings-card[hidden],#settingsMenu[hidden]{display:none}#settingsBack{margin:12px 0}#settingsDialog [data-settings-section=space] button{display:block;width:100%;margin:8px 0;text-align:left}#settingsIndexProgress{color:#61836c;font-size:14px}
+/* Gallery/search composition follows Ente's public navigation and search sections. */
+.gallery-page-title{font-size:24px;margin:14px 0;font-weight:750;letter-spacing:-.6px}.gallery-discovery h3,.gallery-memories h3{font-size:17px;margin:18px 0 10px}.discovery-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}.discovery-photo{padding:0 0 8px;flex:0 0 118px;text-align:left;border:0;background:#e9edf1;border-radius:16px;overflow:hidden}.discovery-photo>img,.discovery-photo .person-face-preview{width:118px;height:118px;object-fit:cover;aspect-ratio:1}.discovery-photo strong,.discovery-photo small{display:block;margin:6px 9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.discovery-photo strong{font-size:13px}.discovery-photo small{font-size:11px}.discovery-chip{flex:0 0 auto;min-width:76px;padding:10px 13px;background:#edf0f1;border:0;border-radius:14px;text-align:left}.discovery-chip small{display:block;margin-top:6px;color:#687873}.discovery-muted{font-size:12px;color:#66766c;line-height:1.5}.gallery-filter-bar,.album-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0}.gallery-sheet{background:#f7f8f7;color:#182435;width:520px}.gallery-sheet select{width:100%;padding:14px;border-radius:12px;margin:12px 0}.gallery-sheet button{margin:8px}.photo-information{display:grid;grid-template-columns:100px 1fr;gap:12px;font-size:14px}.photo-information dt{color:#718079}.photo-information dd{margin:0;overflow-wrap:anywhere}.photos-only #photoNavigation{left:50%;right:auto;transform:translateX(-50%);bottom:14px;width:250px;border:0;border-radius:26px;gap:8px;justify-content:center;box-shadow:0 4px 12px #0003;padding:7px}.photos-only #photoNavigation button{min-width:44px;min-height:42px;border-radius:16px;padding:8px;font-size:20px}.photos-only #photoNavigation button span:last-child{display:none}.photos-only #photoNavigation.has-selection{display:none}.photos-only .shell{padding-bottom:110px}.photos-only .tools{margin:12px 0}.photos-only #cloudSyncPanel{margin:10px 0;padding:10px;font-size:12px}.photos-only .photo-sections{display:none!important}.photos-only .collection-cards{margin-top:16px}.theme-dark .discovery-photo,.theme-dark .discovery-chip{background:#232323;color:#fff}.theme-dark .gallery-sheet{background:#181818;color:#fff}.theme-dark .discovery-muted,.theme-dark .discovery-chip small{color:#aaa}.theme-dark .photo-information dt{color:#aaa}.theme-dark .gallery-sheet select{background:#282828;color:#eee}
+.storage-card{border-radius:18px;padding:16px;margin:12px 0 20px;background:#e2e9e4}.storage-card p{margin:0 0 8px;font-size:13px}.storage-card strong{font-size:20px;display:block}.storage-card progress{width:100%;height:7px;accent-color:#09c535;margin-top:18px}.theme-dark .storage-card{background:linear-gradient(120deg,#333,#242424)}.trash-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #7773}.trash-item>div{flex:1;min-width:0}.trash-item strong,.trash-item small{display:block;overflow-wrap:anywhere}.trash-item small{margin-top:8px;font-size:12px;color:#748075}.trash-list{max-height:55vh;overflow:auto}.photos-only #photoNavigation svg{width:23px;height:23px}.photos-only #photoNavigation [aria-current=true]{background:#151515;color:#fff}.theme-dark.photos-only #photoNavigation [aria-current=true]{background:#080808;color:#fff}.photos-only .photo-grid{grid-template-columns:repeat(var(--gallery-columns,3),minmax(0,1fr))}.photos-only #settingsMenu>input{margin-bottom:18px}.photos-only .settings-menu button{border-radius:18px;min-height:54px;font-size:15px;font-weight:600}.photos-only #settingsDialog{padding:14px 12px}.photos-only .gallery-sheet{border-radius:24px}.photos-only .selection-toolbar{position:sticky;top:8px;z-index:5}
+#viewerVideo{max-width:100%;max-height:100%;width:100%;margin:auto;object-fit:contain}.photo-card[data-media-type=video]::before{content:'▶';position:absolute;left:8px;top:8px;color:#fff;background:#0008;padding:4px 8px;border-radius:10px;z-index:1;font-size:12px}
+.photos-only #appVersion{display:none}.gallery-subpage.photos-only header h1{display:none}.photos-only .cloud-sync-badge{min-width:38px;border-radius:20px;font-size:13px;padding:8px;color:#0ac83a}.photos-only .gallery-subpage header{min-height:38px}.photos-only .discovery-photo .person-face-preview{border-radius:20px}.gallery-sheet .primary{background:#08be38;border-color:#08be38;color:#fff}
+.viewer-more-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}.viewer-more-actions button{margin:0;white-space:normal}.viewer-more-actions select{flex:1 1 100%;min-height:44px}.viewer-controls{flex-wrap:wrap}.viewer-footer{max-height:35dvh;overflow:auto}
+
+/* v1.11: original Photos-inspired presentation, with shared pCloud workflows. */
+:root{--photo-accent:#f97316;--photo-muted:#6d6d72;--photo-surface:#f2f2f7}
+body{font-family:'Outfit Variable',Outfit,'Inter Variable',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+.photos-only{background:#fff;color:#1c1c1e}.photos-only .shell{padding:18px 12px 112px}.photos-only header{align-items:center;gap:12px}.photos-only h1{font-size:26px;letter-spacing:-.8px;color:inherit}.photos-only header button,.photos-only .gallery-toolbar button{color:var(--photo-accent);border:0;background:var(--photo-surface);border-radius:18px;font-weight:600;min-height:40px}.photos-only .tools input{background:#efeff0;border:0;border-radius:12px;color:#1c1c1e;font-size:15px}.photos-only .gallery-page-title{font-size:26px;letter-spacing:-.7px;color:inherit}.photos-only .gallery-toolbar select{background:var(--photo-surface);border:0;color:var(--photo-accent);border-radius:20px;font-size:14px}.photos-only .photo-grid{gap:2px}.photos-only .photo-tile,.photos-only .photo-card{border-radius:0}.photos-only .photo-tile span{font-size:11px;line-height:1.5;color:#636366;padding:3px 4px}.photos-only .photo-day{font-size:16px;font-weight:700;color:inherit;margin:18px 0 8px}.photos-only .collection-card{background:var(--photo-surface);border:0;border-radius:18px;overflow:hidden}.photos-only .discovery-chip,.photos-only .discovery-photo{background:var(--photo-surface);color:inherit}.photos-only .discovery-muted{color:var(--photo-muted)}
+.photos-only #photoNavigation{left:0;right:0;bottom:0;transform:none;width:auto;gap:0;justify-content:space-around;border-radius:0;border-top:1px solid #8e8e932e;background:#f9f9fbef;box-shadow:none;padding:9px 8px max(12px,env(safe-area-inset-bottom))}.photos-only #photoNavigation button{flex:1;max-width:110px;border-radius:14px;gap:5px;padding:7px 3px;min-height:54px;color:#737378}.photos-only #photoNavigation button span.nav-label{display:block;font-size:11px;font-weight:600;line-height:1.2}.photos-only #photoNavigation [aria-current=true]{background:transparent;color:var(--photo-accent)}.photos-only #photoNavigation svg{width:25px;height:25px}.photos-only .primary,.gallery-sheet .primary{background:var(--photo-accent);border-color:var(--photo-accent);color:white}.photos-only .selection-toolbar{background:#e8f2ff;border-color:#a4c8fa;border-radius:16px}.photos-only .selection-toolbar p{color:#385d85}.photo-card.is-selected,.cleanup-photo.is-selected{outline-color:var(--photo-accent)}.is-selected::after{background:var(--photo-accent)}
+.photos-only #settingsDialog{background:var(--photo-surface);color:#1c1c1e;padding:20px 16px}.photos-only #settingsDialog .settings-header{background:var(--photo-surface)}.photos-only #settingsDialog .settings-card{background:white;color:inherit;border:0;border-radius:14px}.photos-only #settingsDialog select{background:var(--photo-surface);color:inherit;border:0}.photos-only .settings-menu{gap:1px;background:white;border-radius:14px;overflow:hidden}.photos-only .settings-menu button{background:white;border:0;border-bottom:1px solid #8e8e9329;border-radius:0;min-height:56px;text-align:left;font-size:17px;font-weight:500;color:inherit;padding:16px}.photos-only .settings-menu button::after{content:'›';float:right;color:#8e8e93}.photos-only .settings-menu button:last-child{border-bottom:0}.photos-only #settingsIndexCoverage{font-size:13px;line-height:1.7}.photos-only .gallery-sheet{background:var(--photo-surface);color:#1c1c1e}.photos-only #viewer{background:#000;color:white}.photos-only #viewer .viewer-header,.photos-only #viewer .viewer-footer{background:#121214}.photos-only #viewer button{color:#64a9ff}.photos-only #viewer .danger{color:#ff6961}.photos-only #viewerFavorite[aria-pressed=true]{color:#ff375f}.photos-only .cloud-sync-badge{color:var(--photo-accent)}
+.theme-dark.photos-only{background:#000!important;color:#f2f2f7!important}.theme-dark.photos-only .shell,.theme-dark.photos-only #photosPanel{background:#000;color:inherit}.theme-dark.photos-only header button,.theme-dark.photos-only .gallery-toolbar select,.theme-dark.photos-only .gallery-toolbar button,.theme-dark.photos-only .tools input{background:#1c1c1e!important;color:#ffa94d!important}.theme-dark.photos-only .photo-day{color:inherit}.theme-dark.photos-only .photo-tile span{color:#aaaab0}.theme-dark.photos-only #photoNavigation{background:#1c1c1eef;border-color:#38383a}.theme-dark.photos-only #photoNavigation button{background:transparent;color:#98989d}.theme-dark.photos-only #photoNavigation [aria-current=true]{background:transparent;color:#ffa94d}.theme-dark.photos-only #settingsDialog,.theme-dark.photos-only #settingsDialog .settings-header{background:#000!important;color:inherit!important}.theme-dark.photos-only #settingsDialog .settings-card,.theme-dark.photos-only .settings-menu,.theme-dark.photos-only .settings-menu button,.theme-dark.photos-only .collection-card,.theme-dark.photos-only .discovery-chip,.theme-dark.photos-only .discovery-photo{background:#1c1c1e!important;color:inherit!important}.theme-dark.photos-only #settingsDialog select{background:#2c2c2e!important;color:inherit!important}.theme-dark.photos-only .selection-toolbar{background:#102742;border-color:#205b99}.theme-dark.photos-only .selection-toolbar p{color:#b6d6ff}.theme-dark.photos-only .gallery-sheet{background:#1c1c1e;color:#f2f2f7}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+/* Existing Android gallery plus a central Music destination. */
+.photos-only.music-enabled.music-active #musicPanel:not([hidden]){display:block!important}
+.photos-only.music-enabled.music-active #musicPanel #player{display:block!important;bottom:104px;z-index:8}
+.photos-only.music-enabled #photoNavigation{width:min(94vw,420px);gap:4px}
+.photos-only.music-enabled #photoNavigation button{min-width:54px;flex:1}
+.photos-only.music-enabled #navMusic{font-size:24px}
+.photos-only.music-enabled #navMusic .nav-label{font-size:10px;display:block!important}
+.music-active #photosPanel,.music-active #galleryPageTitle,.music-active #collectionCards,.music-active #galleryToolbar,.music-active #selectionToolbar,.music-active .tools,.music-active .gallery-discovery,.music-active .gallery-memories{display:none!important}
+.music-active .shell{padding-bottom:230px}
+.music-active #musicPanel{margin-top:14px}
+.photos-only{-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
+.photos-only button,.photos-only a{touch-action:manipulation}
+/* Ente design system — tokens mirrored from ente-io/ente web theme */
+@font-face{font-family:"Inter Variable";font-style:normal;font-display:swap;font-weight:100 900;src:url('fonts/inter-vf.woff2') format('woff2')}
+@font-face{font-family:"Outfit Variable";font-style:normal;font-display:swap;font-weight:100 900;src:url('fonts/outfit-vf.woff2') format('woff2')}
+body{background:#fff;color:#000;font:16px/20px "Inter Variable",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;letter-spacing:-0.011em}
+button{border-color:#0000001f;border-radius:8px;font-weight:600}
+button:focus-visible,input:focus-visible{outline:2px solid #1db954;outline-offset:2px}
+.primary{background:#000;border-color:#000;color:#fff}
+.photos-only .primary{background:#1db954;border-color:#1db954;color:#fff}
+input{background:#f3f3f3;border-color:#0000001f;border-radius:8px}
+.tabs{background:#f3f3f3;border-radius:8px}
+.tabs .active{background:#fff;color:#000;box-shadow:0 1px 3px #0000001f}
+.photo-day{font-family:"Outfit Variable",Outfit,-apple-system,sans-serif;font-weight:600;font-size:20px;line-height:32px;color:#000}
+.photo-tile{border-radius:4px}
+.photo-tile span{color:#00000099;font-weight:500}
+.photo-tile img{background:#0000000a}
+#photoNavigation{background:#fff;border-top:1px solid #0000001f}
+#photoNavigation button{color:#00000099;font-weight:600}
+#photoNavigation button[aria-current=true]{color:#000}
+.collection-card{background:transparent;border:0;padding:0;color:inherit}
+.collection-card img{border-radius:8px}
+.theme-dark button{background:#1b1b1b;border-color:#ffffff29;color:#fff}
+.theme-dark input,.theme-dark select{background:#1b1b1b;border-color:#ffffff29;color:#fff}
+.theme-dark .photo-day{color:#fff}
+.theme-dark .photo-tile span{color:#ffffffb3}
+.theme-dark .photo-tile img{background:#ffffff14}
+.theme-dark #photoNavigation{background:#1b1b1b;border-top:1px solid #ffffff29}
+.theme-dark #photoNavigation button{color:#ffffffb3}
+.theme-dark #photoNavigation button[aria-current=true]{color:#fff}
+.theme-dark .collection-card{background:transparent;border-color:transparent;color:#fff}
+body.theme-dark{background:#000!important;color:#fff!important}
+body.theme-dark .primary{background:#fff;border-color:#fff;color:#000}
+#openMenu{display:none;align-items:center;justify-content:center;width:44px;height:44px;min-height:44px;padding:0;border:0;background:transparent;border-radius:8px;color:inherit;margin-right:2px}
+.photos-only #openMenu{display:inline-flex}
+#openMenu svg{display:block}
+.photos-only header #openSettings{display:none}
+.photos-only header h1{font-size:20px;line-height:25px;font-weight:600;margin:0}
+#menuDrawer{position:fixed;inset:0 auto 0 0;margin:0;height:100%;max-height:100%;width:min(85vw,320px);border:0;border-radius:0;padding:0;background:#fff;color:#000;overflow:auto}
+#menuDrawer[open]{animation:saiDrawerIn .22s cubic-bezier(.2,.8,.2,1)}
+@keyframes saiDrawerIn{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+#menuDrawer::backdrop{background:rgba(255,255,255,.75)}
+.theme-dark #menuDrawer{background:#1b1b1b;color:#fff}
+.theme-dark #menuDrawer::backdrop{background:rgba(0,0,0,.65)}
+.menu-header{display:flex;justify-content:flex-start;padding:6px 6px 0}
+#closeMenu{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;min-height:44px;padding:0;border:0;background:transparent;border-radius:8px;color:inherit}
+.menu-list{display:flex;flex-direction:column;padding:6px 8px 24px}
+.menu-list button{border:0;background:transparent;text-align:left;padding:13px 16px;border-radius:10px;font-size:16px;font-weight:500;color:inherit;min-height:46px}
+.menu-list button:hover,.menu-list button:focus-visible{background:#0000000a}
+.menu-list button[aria-current=true]{font-weight:600}
+.theme-dark .menu-list button:hover,.theme-dark .menu-list button:focus-visible{background:#ffffff14}
+.menu-label{margin:16px 16px 6px;font-size:12px;line-height:16px;font-weight:600;color:#00000099}
+.theme-dark .menu-label{color:#ffffffb3}
+.cleanup-photo{position:relative}
+.cleanup-photo .keep-badge{position:absolute;top:6px;left:6px;z-index:1;background:#1db954;color:#fff;font-size:11px;line-height:14px;font-weight:600;padding:3px 8px;border-radius:6px}
+.cleanup-photo.selected{outline:3px solid #ea3f3f;outline-offset:-3px;border-radius:10px}
+.cleanup-photo.selected .photo-tile img{opacity:.7}
+.theme-dark .cleanup-photo.selected{outline-color:#f53434}
+#viewer{position:fixed;inset:0;width:100%;height:100%;max-width:100%;max-height:100%;margin:0;padding:0;border:none;background:#000;color:#fff}
+#viewer .viewer-header{position:absolute;top:0;left:0;right:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;background:linear-gradient(rgba(0,0,0,.65),transparent)}
+#viewer .viewer-header button{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;border:none;border-radius:999px;background:rgba(255,255,255,.12);color:#fff;font-size:18px;line-height:1}
+#viewer .viewer-header-actions{display:flex;gap:8px}
+#viewer #photoPosition{font-size:13px;font-weight:500;color:#ffffffcc}
+#viewer .viewer-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:44px;height:44px;border:none;border-radius:999px;background:rgba(0,0,0,.45);color:#fff;font-size:24px;line-height:1}
+#viewer .viewer-nav-prev{left:8px}
+#viewer .viewer-nav-next{right:8px}
+#viewer .viewer-nav:disabled{opacity:0}
+#viewer .viewer-footer{position:absolute;left:0;right:0;bottom:0;z-index:3;margin:0;padding:14px 16px 20px;background:linear-gradient(transparent,rgba(0,0,0,.75));text-align:left}
+#viewer #photoTitle{margin:0 0 2px;font-size:13px;font-weight:600;color:#fff}
+#viewer #viewerStatus{margin:0 0 10px;font-size:12px;color:#ffffffb3}
+#viewer .viewer-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#viewer .viewer-tools button{border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600}
+#viewer .viewer-tools button.danger{border-color:rgba(245,52,52,.7);background:rgba(245,52,52,.18);color:#ff8f8f}
+#viewer #viewerDetails{position:absolute;left:0;right:0;bottom:0;z-index:4;max-height:62%;overflow:auto;background:#1b1b1b;color:#fff;border-radius:16px 16px 0 0;padding:14px 20px 28px;box-shadow:0 -8px 30px rgba(0,0,0,.55)}
+#viewer #viewerDetails h3{margin:2px 0 8px;font-size:15px;font-weight:600}
+#viewer .viewer-detail-row{display:flex;justify-content:space-between;gap:16px;margin:0;padding:9px 0;border-bottom:1px solid #ffffff1a;font-size:14px;color:#ffffffcc}
+#viewer .viewer-detail-row span:last-child{color:#fff;text-align:right;word-break:break-word}
+#viewer .viewer-detail-row select{max-width:60%;background:#252525;color:#fff;border:1px solid #ffffff29;border-radius:8px;padding:6px 8px}
+.photos-only{font-family:"Outfit Variable",Outfit,"Inter Variable",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px}
+.photos-only h1,.photos-only h2,.photos-only h3,.photos-only .gallery-page-title,.photos-only .photo-day{font-family:"Outfit Variable",Outfit,-apple-system,sans-serif}
+.photos-only header h1{font-size:20px;line-height:26px;font-weight:600}
+.photos-only .gallery-page-title{font-size:24px;font-weight:600;letter-spacing:-.3px;margin:12px 0}
+.photos-only .gallery-discovery h3,.photos-only .gallery-memories h3{font-size:16px;font-weight:600;margin:18px 0 10px}
+.photos-only .tools input{font-size:15px;padding:12px 14px}
+.photos-only .settings-menu button{min-height:52px;font-size:15px;font-weight:500;padding:14px 16px}
+.photos-only .photo-day{font-size:16px;line-height:24px;font-weight:600;margin:18px 0 6px}
+.photos-only #settingsDialog h3,.photos-only .settings-card h3{font-size:15px;font-weight:600}
+.photos-only #settingsDialog p,.photos-only #settingsDialog li,.photos-only .settings-card p{font-size:13px;line-height:1.55}
+.photos-only dialog h2{font-size:17px}
+.photos-only .discovery-photo strong{font-size:13px}
+.photos-only .collection-card span{font-size:11px;font-weight:500}
+.photos-only .cleanup-group h3{font-size:14px;font-weight:600}
+.photos-only .photo-actions button,.photos-only .photo-sections button{font-size:12px}
+.photos-only #sharedIndexStatus,.photos-only #photoSearchStatus,.photos-only #visualIndexStatus{font-size:12px}
+.theme-dark.photos-only{background:#000;color:#fff}
+.theme-dark.photos-only .shell{background:#000}
+.theme-dark.photos-only .photo-sections .active{background:#fff;color:#000}
+.photos-only #viewer .viewer-header{background:linear-gradient(rgba(0,0,0,.65),transparent)}
+.photos-only #viewer .viewer-footer{background:linear-gradient(transparent,rgba(0,0,0,.75))}
+#viewer .viewer-heart{position:static;width:40px;height:40px;min-height:0;background:rgba(255,255,255,.12);backdrop-filter:none;font-size:19px;color:#fff;border:none;border-radius:999px;padding:0}
+#viewer .viewer-heart[aria-pressed=true]{color:#ff375f}
+.photos-only #viewer .viewer-tools button{color:#fff}
+.photos-only #viewer .viewer-tools button.danger{color:#ff8f8f}
+.photos-only .cleanup-actions{display:flex;flex-direction:column;align-items:stretch;gap:8px;margin:14px 0}
+.photos-only #cleanupSelection{font-size:13px;color:#636366}
+.photos-only #deleteCleanupSelection{order:-1;width:100%;min-height:48px;background:#f53434;border-color:#f53434;color:#fff;font-weight:600;border-radius:12px}
+.photos-only #deleteCleanupSelection:disabled{opacity:.5}
+.photos-only #clearCleanupSelection{width:100%;min-height:46px;background:#f3f3f3;border:0;border-radius:12px;font-weight:600}
+.photos-only #selectSmallerCopies{width:100%;border:0;background:#f3f3f3;border-radius:12px;min-height:42px;font-weight:600}
+.theme-dark.photos-only #clearCleanupSelection,.theme-dark.photos-only #selectSmallerCopies{background:#2b2b2b;color:#fff}
+.theme-dark.photos-only #cleanupSelection{color:#aaa}
+.cleanup-group-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px}
+.cleanup-group-header h3{margin:0}
+.group-select{width:26px;height:26px;min-height:0;padding:0;border-radius:50%;border:2px solid #8e8e93;background:transparent}
+.group-select[aria-pressed=true]{background:#1db954;border-color:#1db954;color:#fff}
+.group-select[aria-pressed=true]::after{content:'✓';font-size:15px;line-height:1}
+.photos-only .cleanup-photo .photo-tile img{aspect-ratio:3/4}
+.cleanup-empty{color:#636366;font-size:14px;line-height:1.6}
+#photoEditor{position:fixed;inset:0;width:100%;height:100%;max-width:100%;max-height:100%;margin:0;padding:0;border:none;background:#000;color:#fff}
+#photoEditor:not([open]){display:none}
+#photoEditor[open]{display:flex;flex-direction:column}
+#photoEditor .editor-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px}
+#photoEditor .editor-top h2{margin:0;font-size:16px;font-weight:600;font-family:"Outfit Variable",Outfit,sans-serif}
+#photoEditor .editor-top button{width:40px;height:40px;min-height:0;padding:0;border:none;border-radius:999px;background:rgba(255,255,255,.12);color:#fff;font-size:16px}
+#photoEditor .editor-top #saveEdited{width:auto;padding:0 18px;min-height:40px;border-radius:999px;background:#1db954;color:#fff;font-weight:600}
+#photoEditor .editor-stage{flex:1;display:grid;place-items:center;overflow:hidden;padding:6px 0}
+#photoEditor #editorCanvas{max-width:100%;max-height:100%;object-fit:contain}
+#photoEditor #editorStatus{margin:0;padding:4px 16px;font-size:12px;color:#ffffffb3;min-height:20px}
+#photoEditor .editor-panel{padding:8px 14px 4px;background:#111}
+#photoEditor .editor-row{display:flex;gap:10px;justify-content:space-between;margin-bottom:10px}
+#photoEditor .editor-row button{flex:1;min-height:44px;border:none;border-radius:12px;background:#1f1f1f;color:#fff;font-size:18px}
+#photoEditor .editor-aspects{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
+#photoEditor .editor-aspects button{white-space:nowrap;border:none;border-radius:999px;background:#1f1f1f;color:#fff;padding:9px 14px;font-size:12px;min-height:38px}
+#photoEditor .editor-aspects button.active{background:#1db954;color:#fff}
+#photoEditor .editor-panel label{display:block;font-size:13px;color:#ffffffcc;margin:10px 0 2px}
+#photoEditor .editor-panel input[type=range]{width:100%;accent-color:#1db954}
+#photoEditor #resetAdjust{margin:12px 0 6px;width:100%;border:none;border-radius:12px;background:#1f1f1f;color:#fff;min-height:42px}
+#photoEditor .editor-filters{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+#photoEditor .editor-filter{aspect-ratio:1;min-height:0;border:none;border-radius:10px;background:#1f1f1f;color:#fff;font-size:12px}
+#photoEditor .editor-filter.active{outline:2px solid #1db954}
+#photoEditor .editor-stage-wrap{position:relative;display:inline-block;max-width:100%;max-height:100%}
+#photoEditor .editor-stage-wrap #editorCanvas{display:block;max-width:100%;max-height:100%}
+#photoEditor #eraseMask{position:absolute;inset:0;width:100%;height:100%;touch-action:none;opacity:.45}
+#photoEditor .editor-stage-wrap.erasing #eraseMask{pointer-events:auto}
+#photoEditor #eraseMask[hidden]{display:none}
+#photoEditor .editor-erase-hint{margin:0 0 8px;font-size:12px;color:#ffffffb3}
+#photoEditor #eraseRun{margin:12px 0 6px;width:100%;min-height:46px;border:none;border-radius:12px;background:#1db954;color:#fff;font-weight:600}
+#photoEditor #eraseRun:disabled{opacity:.5}
+#photoEditor .editor-tabs{display:flex;background:#111;border-top:1px solid #ffffff1a;padding:6px 6px calc(8px + env(safe-area-inset-bottom))}
+#photoEditor .editor-tabs button{flex:1;border:none;background:transparent;color:#ffffff99;font-size:13px;font-weight:600;min-height:44px;border-radius:12px}
+#photoEditor .editor-tabs button.active{color:#1db954}
+.photos-only #galleryToolbar{display:none}
+.photos-only header #appTitle,.photos-only header #appVersion{display:none}
+.photos-only .photo-sections{align-items:center}
+.photos-only .photo-sections button{border-radius:999px;background:#eceff3;border:1px solid transparent;color:#39455a;padding:7px 13px;font-size:13px;font-weight:500;min-height:34px}
+.photos-only .photo-sections button.active{background:#182435;color:#fff}
+.photos-only .photo-sections select{border-radius:999px;min-height:34px;padding:4px 8px;font-size:13px;background:#eceff3;border:1px solid transparent;color:#39455a}
+.theme-dark .photo-sections button,.theme-dark .photo-sections select{background:#232d3c;color:#c9d4e3}
+.theme-dark .photo-sections button.active{background:#e8edf4;color:#111}
+.photos-only #indexStatus:empty,.photos-only #visualIndexStatus:empty,.photos-only #sharedIndexStatus:empty,.photos-only #photoSearchStatus:empty,.photos-only #photoSync:empty{display:none}
+.photos-only .tools:has(#search[hidden]){display:none}
+#saiToast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(12px);background:#1b2430f2;color:#fff;padding:11px 18px;border-radius:999px;font-size:13px;max-width:86vw;text-align:center;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:90}
+#saiToast.show{opacity:1;transform:translateX(-50%)}
+
+/* ===== Sai Photos interface (v1.22) — switchable via Settings > Appearance ===== */
+html[data-ui=sai] body{--sai-grad:linear-gradient(135deg,#ff9d2e,#f97316 55%,#ff6a00);--sai-ink:#17152b;--sai-muted:#6f6b8a;--sai-line:#e6e2f3;--sai-card:#fff;--sai-shadow:0 8px 24px rgba(120,53,15,.10);font-family:'Outfit Variable',Outfit,'Inter Variable',-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif}
+html[data-ui=sai] .photos-only{background:#f7f6fc;color:var(--sai-ink)}
+html[data-ui=sai] body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(900px 480px at 12% -10%,rgba(249,115,22,.16),transparent 60%),radial-gradient(820px 520px at 108% -6%,rgba(255,93,158,.13),transparent 55%),radial-gradient(940px 700px at 50% 118%,rgba(68,206,255,.13),transparent 62%)}
+html[data-ui=sai] .photos-only .shell{padding:18px 14px 132px}
+html[data-ui=sai] h1,html[data-ui=sai] .photos-only h1{letter-spacing:-1.1px}
+html[data-ui=sai] .photos-only .tools input{height:46px;border-radius:23px;background:var(--sai-card);border:1px solid var(--sai-line);box-shadow:0 6px 18px rgba(38,20,90,.06);font-size:15px;padding:0 16px;color:var(--sai-ink);transition:box-shadow .18s,border-color .18s}
+html[data-ui=sai] .photos-only .tools input:focus{outline:0;border-color:#a99dff;box-shadow:0 0 0 4px rgba(249,115,22,.18)}
+html[data-ui=sai] .photos-only .photo-sections{gap:8px;padding-bottom:12px}
+html[data-ui=sai] .photos-only .photo-sections button{border-radius:22px;background:var(--sai-card);border:1px solid var(--sai-line);font-weight:650;color:#4b4767;padding:10px 16px;min-height:40px;box-shadow:0 3px 10px rgba(38,20,90,.05)}
+html[data-ui=sai] .photos-only .photo-sections .active{background:var(--sai-grad);border-color:transparent;color:#fff;box-shadow:0 8px 18px rgba(249,115,22,.32)}
+html[data-ui=sai] .photos-only .photo-grid{gap:8px;padding:2px}
+html[data-ui=sai] .photos-only .photo-tile,html[data-ui=sai] .photos-only .photo-card{border-radius:16px;overflow:hidden;box-shadow:0 4px 14px rgba(30,18,70,.07)}
+html[data-ui=sai] .photos-only .photo-card{background:var(--sai-card)}
+html[data-ui=sai] .photos-only .photo-tile span{display:none}
+html[data-ui=sai] .photos-only .photo-day{font-size:17px;font-weight:750;letter-spacing:-.2px;color:#312a5c;margin:24px 2px 10px;position:sticky;top:0;z-index:3;background:linear-gradient(180deg,rgba(247,246,252,.97),rgba(247,246,252,.8));backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:8px 8px;border-radius:14px}
+html[data-ui=sai] .photos-only button{border-radius:16px}
+html[data-ui=sai] .photos-only header button,html[data-ui=sai] .photos-only .gallery-toolbar button{background:var(--sai-card);border:1px solid var(--sai-line);color:#3c3763;border-radius:18px;box-shadow:0 4px 12px rgba(30,18,70,.05);font-weight:650}
+html[data-ui=sai] .photos-only .gallery-toolbar select{border-radius:18px;background:var(--sai-card);border:1px solid var(--sai-line);color:#3c3763}
+html[data-ui=sai] .photos-only .primary,html[data-ui=sai] .gallery-sheet .primary{background:var(--sai-grad);border:0;color:#fff;box-shadow:0 8px 20px rgba(249,115,22,.3)}
+html[data-ui=sai] .photos-only .selection-toolbar{border-radius:22px;border:1px solid rgba(124,92,255,.25);background:rgba(255,255,255,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 14px 34px rgba(35,20,80,.14);padding:12px}
+html[data-ui=sai] .photo-card.is-selected,html[data-ui=sai] .cleanup-photo.is-selected{outline:3px solid #7c5cff;outline-offset:-3px;border-radius:16px}
+html[data-ui=sai] .is-selected::after{background:var(--sai-grad)}
+html[data-ui=sai] .photos-only .collection-card{background:var(--sai-card);border-radius:20px;box-shadow:0 6px 18px rgba(30,18,70,.07);padding:8px}
+html[data-ui=sai] .photos-only .collection-card img,html[data-ui=sai] .photos-only .person-face-preview{border-radius:14px}
+html[data-ui=sai] #photoNavigation{left:50%;right:auto;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));width:min(92vw,430px);border:1px solid rgba(120,110,190,.2);border-radius:26px;background:rgba(255,255,255,.88);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);box-shadow:0 12px 32px rgba(35,20,80,.18);padding:8px;gap:4px;justify-content:space-between;overflow:hidden}
+html[data-ui=sai] #photoNavigation button{flex:1;border-radius:20px;min-height:52px;color:#7a7694}
+html[data-ui=sai] #photoNavigation button span.nav-label{display:block;font-size:10.5px;font-weight:650;letter-spacing:.2px}
+html[data-ui=sai] #photoNavigation [aria-current=true]{background:var(--sai-grad);color:#fff;box-shadow:0 8px 18px rgba(249,115,22,.35)}
+html[data-ui=sai] #photoNavigation svg{width:22px;height:22px}
+html[data-ui=sai] #photoNavigation.has-selection{display:none}
+html[data-ui=sai] dialog{border-radius:28px;box-shadow:0 30px 80px rgba(20,10,60,.45)}
+html[data-ui=sai] dialog::backdrop{background:rgba(16,10,40,.55);backdrop-filter:blur(6px)}
+html[data-ui=sai] #viewer{border-radius:0}
+html[data-ui=sai] .photos-only #settingsDialog{background:#f7f6fc;padding:22px 16px}
+html[data-ui=sai] .photos-only #settingsDialog .settings-header{background:transparent}
+html[data-ui=sai] .photos-only #settingsDialog .settings-card{background:var(--sai-card);border-radius:18px;box-shadow:0 6px 18px rgba(30,18,70,.06);padding:14px;border:0}
+html[data-ui=sai] .photos-only .settings-menu{background:transparent;gap:10px}
+html[data-ui=sai] .photos-only .settings-menu button{background:var(--sai-card);border:0;border-radius:18px;box-shadow:0 6px 18px rgba(30,18,70,.06);min-height:54px;font-size:15px;font-weight:650;padding:14px 16px}
+html[data-ui=sai] .photos-only #settingsDialog select{border-radius:16px;border:1px solid var(--sai-line);background:#fff}
+html[data-ui=sai] .photos-only #viewer{background:#05060c}
+html[data-ui=sai] .photos-only #viewer .viewer-header{background:linear-gradient(180deg,rgba(5,6,12,.94),rgba(5,6,12,0))}
+html[data-ui=sai] .photos-only #viewer .viewer-footer{background:linear-gradient(0deg,rgba(5,6,12,.96),rgba(5,6,12,.74));border-radius:26px 26px 0 0;border-top:1px solid rgba(255,255,255,.08)}
+html[data-ui=sai] #viewer button{border-radius:14px}
+html[data-ui=sai] #saiToast{border-radius:18px;background:rgba(23,16,58,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 14px 40px rgba(10,5,40,.45)}
+html[data-ui=sai] .photos-only .cloud-sync{border-radius:20px;border:1px solid var(--sai-line);background:var(--sai-card);box-shadow:var(--sai-shadow)}
+html[data-ui=sai] .photos-only .discovery-photo,html[data-ui=sai] .photos-only .discovery-chip{background:var(--sai-card);border-radius:20px;box-shadow:0 4px 14px rgba(30,18,70,.06)}
+html[data-ui=sai] .photos-only .gallery-page-title{letter-spacing:-1.2px}
+html[data-ui=sai] .theme-dark{background:#0d0b1a!important;color:#f1effa!important}
+html[data-ui=sai] .theme-dark .shell,html[data-ui=sai] .theme-dark #photosPanel{background:transparent;color:#f1effa}
+html[data-ui=sai] .theme-dark::before{background:radial-gradient(900px 480px at 12% -10%,rgba(249,115,22,.24),transparent 60%),radial-gradient(820px 520px at 108% -6%,rgba(255,93,158,.16),transparent 55%),radial-gradient(940px 700px at 50% 118%,rgba(68,206,255,.14),transparent 62%)}
+html[data-ui=sai] .theme-dark .photo-day{color:#cfc9ee;background:linear-gradient(180deg,rgba(13,11,26,.96),rgba(13,11,26,.78))}
+html[data-ui=sai] .theme-dark .photo-card,html[data-ui=sai] .theme-dark .photo-tile{background:#1a1730}
+html[data-ui=sai] .theme-dark button,html[data-ui=sai] .theme-dark select,html[data-ui=sai] .theme-dark input{background:#1d1936;color:#f1effa;border-color:#2c2650}
+html[data-ui=sai] .theme-dark .tools input{background:#1a1730!important;border-color:#2c2650!important;color:#f1effa}
+html[data-ui=sai] .theme-dark .photo-sections button{background:#1d1936;border-color:#2c2650;color:#cfc9ee}
+html[data-ui=sai] .theme-dark #photoNavigation{background:rgba(18,14,38,.92);border-color:#2c2650}
+html[data-ui=sai] .theme-dark #photoNavigation button{color:#8b85ad}
+html[data-ui=sai] .theme-dark #settingsDialog{background:#0d0b1a!important;color:#f1effa!important}
+html[data-ui=sai] .theme-dark #settingsDialog .settings-card,html[data-ui=sai] .theme-dark .settings-menu button{background:#171332!important;color:#f1effa}
+html[data-ui=sai] .theme-dark #settingsDialog select{background:#221c45!important;color:#f1effa!important;border-color:#332b63!important}
+html[data-ui=sai] .theme-dark .selection-toolbar{background:rgba(23,19,50,.94);border-color:#3a2f6e}
+html[data-ui=sai] .theme-dark .collection-card,html[data-ui=sai] .theme-dark .discovery-photo,html[data-ui=sai] .theme-dark .discovery-chip{background:#171332;color:#f1effa}
+html[data-ui=sai] .theme-dark .cloud-sync{background:#171332;border-color:#2c2650;color:#cfc9ee}
+html[data-ui=sai] .theme-dark .settings-muted,html[data-ui=sai] .theme-dark #sharedIndexStatus{color:#9a94bd}
+@media (prefers-reduced-motion: no-preference){html[data-ui=sai] .photos-only .photo-card{transition:transform .16s ease,box-shadow .16s ease}html[data-ui=sai] .photos-only .photo-card:active{transform:scale(.97)}html[data-ui=sai] .photos-only button{transition:transform .12s ease,box-shadow .16s ease}html[data-ui=sai] .photos-only button:active{transform:scale(.97)}}
+
+/* ===== Photo sources (pCloud / Apple Photos) + polish (v1.23) ===== */
+.empty-symbol svg{width:72px;height:72px;display:inline-block}
+html[data-ui=sai] .empty-symbol{color:#8a5cff}
+#settingsAccountPage h3{margin-top:18px}
+
+
+/* ===== v1.24: full-screen viewer, GPU zoom, jank fixes ===== */
+.image-stage{position:absolute;inset:0;overflow:hidden;display:flex;align-items:center;justify-content:center;touch-action:none;overscroll-behavior:contain}
+.image-stage img{display:block;max-width:100%;max-height:100%;width:auto;height:auto;margin:0;object-fit:contain;flex:0 0 auto;transform-origin:center center;will-change:transform;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;pointer-events:none}
+.image-stage video{max-width:100%;max-height:100%}
+.viewer-header{background:linear-gradient(180deg,rgba(5,8,14,.72),rgba(5,8,14,0));pointer-events:none;transition:opacity .22s ease}
+.viewer-header button,.viewer-header span{pointer-events:auto}
+.viewer-footer{background:linear-gradient(0deg,rgba(5,8,14,.8),rgba(5,8,14,0));pointer-events:none;transition:opacity .22s ease;padding-top:30px}
+.viewer-footer p{pointer-events:auto;margin-bottom:2px}
+.viewer-footer p:last-child{margin-bottom:0}
+#viewer .viewer-nav{opacity:.62;transition:opacity .22s ease}
+#viewer.chrome-hidden .viewer-header,#viewer.chrome-hidden .viewer-footer,#viewer.chrome-hidden .viewer-nav{opacity:0;pointer-events:none}
+#closeViewer,#viewerMenuButton{width:44px;height:44px;min-height:44px;padding:0;border-radius:50%;display:grid;place-items:center}
+#viewerMenu{position:absolute;top:calc(64px + env(safe-area-inset-top));right:12px;z-index:15;display:flex;flex-direction:column;gap:2px;min-width:224px;max-width:min(86vw,280px);max-height:calc(100dvh - 150px);overflow:auto;background:#141a26f7;border:1px solid #2a3547;border-radius:16px;padding:6px;box-shadow:0 18px 48px rgba(0,0,0,.5)}
+#viewerMenu button{display:flex;align-items:center;gap:12px;justify-content:flex-start;background:transparent;border:0;border-radius:11px;min-height:46px;padding:10px 14px;font-size:14.5px;text-align:left;width:100%;color:#fff}
+#viewerMenu button:active{background:#25304b}
+#viewerFavoriteGlyph{font-size:20px;line-height:1}
+#viewerMenu .danger-item{color:#ff8fa3;justify-content:flex-start}
+#viewerMenu .viewer-menu-row{display:flex;flex-direction:column;gap:8px;padding:10px 14px;font-size:13.5px;color:#c7d2e5}
+#viewerMenu select{width:100%;padding:10px;font-size:14px}
+#viewer .viewer-heart{position:static;width:auto;height:auto;min-height:0;background:transparent;border:0;backdrop-filter:none;-webkit-backdrop-filter:none}
+html[data-ui=sai] #viewerMenu{border-radius:20px;background:rgba(20,16,44,.97);border-color:rgba(130,110,220,.3)}
+html[data-ui=sai] #viewerMenu button:active{background:rgba(120,92,255,.16)}
+
+/* performance: no expensive blur passes (Sai interface) */
+html[data-ui=sai] .photos-only .photo-day{backdrop-filter:none;-webkit-backdrop-filter:none;background:linear-gradient(180deg,rgba(247,246,252,.99),rgba(247,246,252,.94))}
+html[data-ui=sai] .theme-dark .photos-only .photo-day{background:linear-gradient(180deg,rgba(19,16,40,.99),rgba(19,16,40,.93))}
+html[data-ui=sai] .photos-only .selection-toolbar{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(255,255,255,.97)}
+html[data-ui=sai] #photoNavigation{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(255,255,255,.96)}
+html[data-ui=sai] dialog::backdrop{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(16,10,40,.62)}
+html[data-ui=sai] #saiToast{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(23,16,58,.97)}
+
+/* long lists render offscreen cheaply */
+.cleanup-group{content-visibility:auto;contain-intrinsic-size:340px}
+.collection-card{content-visibility:auto;contain-intrinsic-size:210px}
+
+/* v1.26.2 — icon song actions, Spotify-style player and queue */
+.track-actions{flex-wrap:wrap}
+.track-actions button{min-width:42px;min-height:42px;padding:6px;font-size:17px;line-height:1;max-width:none}
+.track-actions button.active{background:#2f6b47;color:#8df3b7;border:1px solid #3fa96b}
+.track-actions button.danger{color:#ffb4ac}
+.music-queue li button{display:flex;align-items:center;gap:10px;border-radius:12px;padding:10px 8px}
+.music-queue li button:hover{background:#22382c}
+.queue-index{min-width:22px;color:#8fae9a;font-weight:600;text-align:right}
+.music-queue ol li.is-current button{background:#22422f}
+@media(max-width:760px){.track-actions{width:100%;justify-content:flex-start;padding-left:38px}}
+#musicPanel .player.is-expanded{position:static;margin-top:18px}
+#musicPanel .player.is-expanded .music-now{flex-direction:column;text-align:center;gap:12px;padding-top:12px}
+#musicPanel .player.is-expanded .music-art{width:min(56vw,210px);height:min(56vw,210px);border-radius:26px;font-size:76px;margin:6px auto}
+#musicPanel .player.is-expanded .music-now>div:nth-child(2){flex:none;width:100%}
+#musicPanel .player.is-expanded #nowPlaying{font-size:17px;white-space:normal}
+#musicPanel .player.is-expanded .music-transport{gap:22px;justify-content:center}
+#musicPanel .player.is-expanded #toggleMusic{width:60px;height:60px;font-size:26px}
+#musicPanel .player.is-expanded .music-extras{justify-content:center}
+#fullQueueDialog.queue-sheet{max-width:520px;width:92vw;max-height:80vh}
+#fullQueueDialog ol{padding:0;list-style:none;margin:10px 0}
+#fullQueueDialog li button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 8px;border-radius:12px;background:transparent;border:0;color:inherit;font-size:14px}
+#fullQueueDialog li button:hover{background:#22382c}
+#fullQueueDialog li.is-current button{background:#22422f;font-weight:600;color:#c7f7d9}
+#fullQueueDialog .queue-index{min-width:24px;text-align:right;color:#8fae9a}
+#fullQueueDialog .queue-index .queue-name{white-space:normal;overflow-wrap:anywhere}
+
+/* v1.26.3 — menu drawer close button comfortably reachable below the status bar */
+.menu-header{padding:22px 6px 0}
+#closeMenu{width:48px;height:48px;min-height:48px}.search-extras{margin:10px 0 4px}.search-extras h3{margin:14px 0 8px;font-size:12px;font-weight:650;color:var(--photo-muted,#607087);text-transform:uppercase;letter-spacing:.05em}.search-extras-row{display:flex;flex-wrap:wrap;gap:8px}.search-extras-row button{display:flex;align-items:center;gap:8px;border-radius:999px;padding:8px 13px;min-height:38px;font-size:13px;max-width:100%}.search-extras-row button>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.search-extras-note{font-size:11px;color:#607087;white-space:nowrap}.theme-dark .search-extras-note{color:#aaa}.theme-dark .search-extras h3{color:#aaa}
+.collection-card{overflow:hidden}
+.collection-card>strong{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.collection-card>span{font-size:12px;opacity:.75}
+#photoNavigation button span.nav-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#photoNavigation svg{display:block;width:23px;height:23px}
+#viewerMenu{max-height:min(48dvh,360px);overflow-y:auto;overscroll-behavior:contain}
+/* v1.28.0 —global mini player (top, app-wide) */
+.mini-player{position:relative;display:flex;align-items:center;gap:10px;margin:10px 0 14px;padding:10px 12px 16px;border-radius:18px;background:#15231c;border:1px solid #2b4536;color:#edf5ef;box-shadow:0 10px 24px rgba(0,0,0,.35)}
+.mini-player .mini-art{width:46px;height:46px;border-radius:12px;background:#32c676;color:#092010;display:grid;place-items:center;font-size:22px;flex:none}
+.mini-player .mini-open{flex:1;min-width:0;background:transparent;border:0;color:#edf5ef;text-align:left;padding:2px 4px;min-height:44px}
+.mini-player .mini-open .mini-eyebrow{display:block;font-size:10px;letter-spacing:1.6px;color:#9cbaa8;margin-bottom:2px}
+.mini-player .mini-open span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px;font-weight:500}
+.mini-player .mini-controls{display:flex;gap:6px;align-items:center}
+.mini-player .mini-controls button{background:#26362f;border:0;color:#d7e5db;min-width:38px;min-height:38px;padding:4px;border-radius:50%;font-size:17px}
+.mini-player .mini-controls button:disabled{opacity:.5}
+#miniPlay{background:#32c676;color:#092010;font-weight:700}
+.mini-progress{position:absolute;left:12px;right:12px;bottom:7px;height:3px;border-radius:3px;background:rgba(255,255,255,.16);overflow:hidden}
+.mini-progress i{display:block;height:100%;width:0;background:#32c676;border-radius:3px;transition:width .2s linear}
+/* v1.28.0 — Spotify-style full-screen player + seek bar */
+.player-top{display:none}
+.seek-row{display:none;align-items:center;gap:10px}
+.seek-row input[type=range]{flex:1;padding:0;max-width:none;accent-color:#32c676;min-height:32px}
+.seek-row span{font-size:11px;color:#9db6a5;white-space:nowrap}
+#musicPanel .player.is-expanded .seek-row{display:flex}
+#musicPanel .player.is-fullscreen{position:fixed;inset:0;z-index:30;border:0;border-radius:0;display:flex;flex-direction:column;padding:calc(14px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom));background:linear-gradient(180deg,#101d17,#0b1512);max-height:none;overflow-y:auto}
+#musicPanel .player.is-fullscreen .player-top{display:flex;align-items:center;gap:10px}
+#musicPanel .player.is-fullscreen .player-top p{flex:1;margin:0;font-size:13px;opacity:.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#musicPanel .player.is-fullscreen .player-top button{background:#26362f;border:0;color:#d7e5db;min-width:44px;min-height:44px;border-radius:14px;font-size:18px}
+#musicPanel .player.is-fullscreen .music-now{flex-direction:column;text-align:center;gap:14px;margin:14px 0 0}
+#musicPanel .player.is-fullscreen .music-art{width:min(54vw,220px);height:min(54vw,220px);font-size:70px;border-radius:26px}
+#musicPanel .player.is-fullscreen .music-now>div:nth-child(2){flex:none;width:100%}
+#musicPanel .player.is-fullscreen .music-now p{white-space:normal}
+#musicPanel .player.is-fullscreen .music-now .mini-toggle,#musicPanel .player.is-fullscreen .music-now .mini-expand{display:none}
+#musicPanel .player.is-fullscreen .music-now .heart{font-size:26px;min-width:56px;min-height:56px}
+#musicPanel .player.is-fullscreen .music-transport{display:flex;margin:16px 0 4px;gap:14px}
+#musicPanel .player.is-fullscreen .music-transport #toggleMusic{width:64px;height:64px;font-size:26px}
+#musicPanel .player.is-fullscreen .music-transport #previousSong,#musicPanel .player.is-fullscreen .music-transport #nextSong{font-size:28px;min-width:56px;min-height:56px}
+#musicPanel .player.is-fullscreen .seek-row{display:flex}
+#musicPanel .player.is-fullscreen audio{display:none}
+#musicPanel .player.is-fullscreen .music-extras{display:none;margin-top:18px}
+#musicPanel .player.is-fullscreen.is-menu .music-extras{display:flex;background:#182a22;border-radius:16px;padding:14px}
+
+/* v1.28.0 — brand: orange accents, Inter body font, gentle motion */
+button{transition:transform .12s ease,background-color .18s ease,color .18s ease,box-shadow .18s ease}
+input,select{transition:background-color .18s ease,color .18s ease}
+button:active{transform:scale(.965)}
+.photo-tile img{transition:opacity .25s ease}
+@keyframes sai-rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}.collection-card,.discovery-chip,.mini-player{animation:sai-rise .22s ease}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* v1.28.1 — lighter typography and Spotify-style music touches */
+h1,h2,h3,h4,h5,b,strong,summary{font-weight:600}
+button,.primary,.nav-label,.music-sections button,.photo-sections button{font-weight:500}
+.mini-player .mini-open span{font-weight:500}
+.mini-player .mini-eyebrow{font-weight:500}
+
+/* Android Music: compact library, readable song rows and secondary-action menus. */
+html.sai-android #musicPanel{padding:14px 10px 20px;border-radius:16px;background:#121212;color:#f5f5f5;font-size:13px;color-scheme:dark}
+html.sai-android #musicPanel button,html.sai-android #musicPanel input,html.sai-android #musicPanel select{font-size:13px}
+html.sai-android #musicPanel h2{font-size:20px;letter-spacing:-.3px}
+html.sai-android #musicPanel h3{font-size:15px}
+html.sai-android #musicPanel .music-sections{gap:7px;margin:0 0 14px;padding:2px 0 6px;scrollbar-width:none}
+html.sai-android #musicPanel .music-sections button{padding:7px 14px;min-height:40px;border-radius:24px;background:#282828;color:#eee;font-size:12px}
+html.sai-android #musicPanel .music-sections button.active{background:#1ed760;color:#091b0f}
+html.sai-android #musicPanel .music-search{margin:10px 0 12px;font-size:11px;color:#b3b3b3}
+html.sai-android #musicPanel #musicSearch{margin-top:5px;min-height:44px;padding:10px 12px;border-radius:8px;border:1px solid #383838;background:#242424;color:white;font-size:13px;max-width:none}
+html.sai-android #musicPanel .music-actions{gap:8px;margin:8px 0 14px}
+html.sai-android #musicPanel .music-actions>button{min-height:40px;padding:8px 13px;border-radius:22px;background:#292929;font-size:12px}
+html.sai-android #musicPanel #playAll{background:#1ed760;color:#071c0d;font-weight:600}
+html.sai-android #musicPanel .music-management{position:relative;margin-left:auto}
+html.sai-android #musicPanel .music-management summary{display:flex;align-items:center;min-height:44px;padding:8px 10px;color:#c2c2c2;font-size:12px;cursor:pointer;list-style:none;border-radius:8px}
+html.sai-android #musicPanel summary::-webkit-details-marker{display:none}
+html.sai-android #musicPanel .music-management-actions{position:absolute;top:100%;right:0;z-index:6;min-width:195px;padding:5px;background:#282828;border:1px solid #444;border-radius:10px;box-shadow:0 12px 30px #0007;display:grid}
+html.sai-android #musicPanel .music-management:not([open]) .music-management-actions{display:none}
+html.sai-android #musicPanel .music-management-actions button{min-height:44px;border:0;background:transparent;text-align:left;border-radius:6px;font-size:13px}
+html.sai-android #musicPanel .songs{margin:0;padding:0}
+html.sai-android #musicPanel .music-track{position:relative;display:grid;grid-template-columns:minmax(0,1fr);gap:2px;min-height:64px;margin:0;padding:4px 0;border-radius:6px;background:transparent;overflow:visible}
+html.sai-android #musicPanel .music-track.is-playing{outline:0;background:#1e1e1e}
+html.sai-android #musicPanel .music-track .song{min-height:52px;padding:4px;gap:10px;border-radius:6px;overflow:hidden}
+html.sai-android #musicPanel .music-track .note{display:grid;place-items:center;width:42px;height:42px;flex:none;border-radius:5px;background:linear-gradient(135deg,#314a42,#22312d);font-size:20px;color:#b2d3bd}
+html.sai-android #musicPanel .music-track .name{font-size:14px;line-height:1.35;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.sai-android #musicPanel .music-track.is-playing .name{color:#1ed760}
+html.sai-android #musicPanel .music-time{font-size:11px;line-height:1.4;margin-top:3px;color:#b3b3b3;overflow:hidden;text-overflow:ellipsis}
+html.sai-android #musicPanel .music-track>.heart{width:44px;min-height:44px;padding:0;font-size:21px;color:#aaa;background:transparent;border:0}
+html.sai-android #musicPanel .music-track>.heart[aria-pressed=true]{color:#1ed760}
+html.sai-android #musicPanel .track-menu{position:relative;align-self:center}
+html.sai-android #musicPanel .track-menu>summary{display:grid;place-items:center;min-height:44px;width:44px;font-size:23px;line-height:1;list-style:none;color:#b3b3b3;cursor:pointer;border-radius:50%}
+html.sai-android #musicPanel summary:focus-visible{outline:2px solid #1ed760;outline-offset:2px}
+html.sai-android #musicPanel .track-menu>.track-actions{position:absolute;right:0;top:42px;z-index:5;display:flex;flex-direction:column;align-items:stretch;gap:1px;width:210px;padding:5px;border:1px solid #454545;border-radius:10px;background:#282828;box-shadow:0 12px 28px #0008}
+html.sai-android #musicPanel .track-menu:not([open])>.track-actions{display:none}
+html.sai-android #musicPanel .track-menu .track-actions button{width:100%;max-width:none;min-height:44px;padding:10px 12px;text-align:left;font-size:13px;line-height:1.3;background:transparent;border:0;border-radius:6px;color:#eee}
+html.sai-android #musicPanel .track-menu .track-actions button.danger{color:#ff9b9b}
+html.sai-android #musicPanel .track-actions button:active,html.sai-android #musicPanel .music-management-actions button:active{background:#3b3b3b}
+html.sai-android #musicPanel .music-queue{border-color:#303030;font-size:12px}
+html.sai-android #musicPanel .music-queue button{font-size:12px}
+html.sai-android #musicPanel #musicPlaylistCards{gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}
+html.sai-android #musicPanel #musicPlaylistCards .collection-card{min-height:100px;padding:14px;background:linear-gradient(135deg,#294b40,#202020);border:0;border-radius:8px;gap:6px}
+html.sai-android #musicPanel #musicPlaylistCards strong{font-size:14px}
+html.sai-android #musicPanel #musicPlaylistCards span{font-size:11px;color:#bcbcbc}
+html.sai-android #musicPanel .player{background:#212121;border-color:#343434;border-radius:12px;padding:10px}
+html.sai-android #musicPanel .music-now #nowPlaying{font-size:14px;line-height:1.35}
+html.sai-android #musicPanel .music-now #musicPlaybackStatus{font-size:11px;color:#b3b3b3;margin:3px 0 0}
+html.sai-android #musicPanel .player.is-fullscreen{background:linear-gradient(180deg,#263d33,#121212 65%);padding:calc(12px + env(safe-area-inset-top)) 20px calc(18px + env(safe-area-inset-bottom));border-radius:0}
+html.sai-android #musicPanel .player.is-fullscreen .music-art{width:min(66vw,300px);height:min(66vw,300px);border-radius:8px;font-size:72px;background:linear-gradient(135deg,#426851,#24322b);color:#c8decf}
+html.sai-android #musicPanel .player.is-fullscreen #nowPlaying{font-size:20px;text-align:left;margin:16px 0 4px}
+html.sai-android #musicPanel .player.is-fullscreen .music-transport #toggleMusic{width:60px;height:60px;font-size:24px;background:#1ed760;color:#101d14}
+html.sai-android #musicPanel .player.is-fullscreen .music-transport button{min-width:44px;min-height:44px;font-size:12px}
+html.sai-android #musicPanel .player.is-fullscreen .music-transport #previousSong,html.sai-android #musicPanel .player.is-fullscreen .music-transport #nextSong{min-width:44px;min-height:44px;font-size:26px}
+html.sai-android #musicPanel :is(#musicDownloadStatus,#musicSmartStatus,#musicIndexStatus){font-size:11px;line-height:1.5;margin:6px 0;color:#b3b3b3}
+html.sai-android #musicPanel :is(#musicDownloadStatus,#musicSmartStatus,#musicIndexStatus):empty{display:none}
+
+/* Android Library / Albums / Search: compact type with usable touch targets. */
+html.sai-android .photos-only{font-size:13px}
+html.sai-android .photos-only :is(h1,.gallery-page-title){font-size:22px;line-height:1.2;letter-spacing:-.35px;font-weight:600;margin:10px 0}
+html.sai-android .photos-only h2{font-size:19px}
+html.sai-android .photos-only h3{font-size:15px}
+html.sai-android .photos-only :is(button,select,input){font-size:13px}
+html.sai-android .photos-only :is(.gallery-toolbar button,.gallery-toolbar select,.album-actions button,.gallery-filter-bar button){min-height:44px;padding:8px 12px;font-size:12px}
+html.sai-android .photos-only .collection-card :is(strong,p){font-size:13px;line-height:1.35}
+html.sai-android .photos-only .collection-card>span{font-size:11px}
+html.sai-android .tools:has(#search:not([hidden])){display:grid;grid-template-columns:minmax(0,1fr);gap:6px;margin:10px 0}
+html.sai-android .tools #search{min-width:0;width:100%;height:44px;min-height:44px;font-size:14px;padding:10px 12px;border-radius:10px;grid-column:1;grid-row:1}
+html.sai-android .tools #count{grid-column:1/-1;grid-row:2;margin:0;font-size:11px;color:var(--photo-muted,#a0a0a0)}
+html.sai-android #settingsDialog{font-size:13px}
+html.sai-android #settingsDialog :is(select,input:not([type=checkbox]),button){font-size:13px;min-height:44px}
+html.sai-android #settingsDialog :is(p,.settings-muted){font-size:12px;line-height:1.5}
+html.sai-android #settingsDialog :is(h2,h3){font-size:19px}
+html.sai-android #settingsDialog h4{font-size:14px;margin:16px 0 8px}
+html.sai-android #cleanupGroups,html.sai-android #cleanupGroups :is(.photo-tile,img,label){touch-action:pan-y pinch-zoom}
+html.sai-android #cleanupGroups{overflow-anchor:auto}
+html.sai-android .cleanup-group{padding:10px;margin:12px 0;border-radius:12px;content-visibility:visible;contain:none}
+html.sai-android .cleanup-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+html.sai-android .cleanup-photo{min-width:0}
+html.sai-android .cleanup-photo label{min-height:44px;margin:4px 0;font-size:11px;gap:4px;align-items:center}
+html.sai-android .cleanup-photo input[type=checkbox]{width:18px;height:18px;min-height:18px;flex:none;accent-color:var(--photo-accent,#1ed760)}
+html.sai-android .cleanup-caption{min-width:0;overflow-wrap:anywhere;line-height:1.35}
+html.sai-android .cleanup-folder{font-size:10px;line-height:1.35;margin:0 0 6px}
+html.sai-android .cleanup-group-header{align-items:center;gap:8px}
+html.sai-android .cleanup-group-header h3{font-size:13px}
+html.sai-android .cleanup-actions{gap:6px;font-size:12px}
+html.sai-android .cleanup-actions button{font-size:12px;min-height:44px;padding:8px 10px}
+html.sai-android #cleanupHint{font-size:12px;line-height:1.45}
+html.sai-android .selection-toolbar{padding:8px;gap:6px;max-height:34dvh;overflow-y:auto}
+html.sai-android .selection-toolbar button{font-size:12px;min-height:44px;padding:7px 10px}
+html.sai-android .selection-toolbar p{font-size:11px}
+@media(min-width:700px){html.sai-android .cleanup-grid{grid-template-columns:repeat(auto-fill,minmax(145px,1fr))}}
+
+.cleanup-group-header .group-select{width:auto;height:auto;min-height:44px;min-width:100px;padding:6px 10px;border-radius:10px;font-size:12px}.cleanup-group-header .group-select[aria-pressed=true]::after{content:none}.cleanup-preview{min-height:44px;width:100%;font-size:12px;padding:6px}.cleanup-grid [data-gallery-action]{touch-action:pan-y pinch-zoom}html.sai-android .tools:has(#search:not([hidden])){grid-template-columns:minmax(0,1fr)}
+
+/* ---- Library zoom + Apple Photos parity (ported from app build) ---- */
+.library-zoom{display:flex;gap:4px;justify-content:center;margin:10px auto 14px;padding:3px;background:#f0f0f3;border-radius:12px;max-width:340px}
+.library-zoom[hidden]{display:none!important}
+.library-zoom button{flex:1;border:0;background:transparent;border-radius:9px;padding:8px 10px;font-weight:600;font-size:13px;color:#5c5c66;min-height:34px;box-shadow:none}
+.library-zoom button[aria-current=true]{background:#fff;color:#000;box-shadow:0 1px 3px #00000022}
+.theme-dark .library-zoom{background:#232327}
+.theme-dark .library-zoom button{color:#b6b6c0}
+.theme-dark .library-zoom button[aria-current=true]{background:#3a3a42;color:#fff}
+html[data-ui=sai] .library-zoom{background:var(--i-surface2);border:1px solid var(--i-border)}
+html[data-ui=sai] .library-zoom button{color:var(--i-muted)}
+html[data-ui=sai] .library-zoom button[aria-current=true]{background:var(--i-primary);color:#fff;box-shadow:none}
+@media(max-width:600px){.library-zoom{margin:8px auto 12px;max-width:none}}
+
+/* ---- Apple Photos parity mode (html[data-ui=apple]) ---- */
+html[data-ui=apple]{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html[data-ui=apple] body,html[data-ui=apple] .photos-only{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Segoe UI",Roboto,system-ui,sans-serif}
+html[data-ui=apple] body{background:#fff;color:#000}
+html[data-ui=apple] .photos-only{background:#fff;color:#000}
+html[data-ui=apple] .photos-only .shell{padding:10px 0 96px;max-width:none}
+html[data-ui=apple] .photos-only h1{font-size:34px;font-weight:800;letter-spacing:-.7px;padding:0 16px}
+html[data-ui=apple] .photos-only header{padding:0 8px}
+html[data-ui=apple] .photos-only .eyebrow{padding:0 16px;color:#8e8e93;font-weight:500}
+html[data-ui=apple] .gallery-page-title{font-size:34px;font-weight:800;letter-spacing:-.7px;padding:4px 16px 0;color:inherit}
+html[data-ui=apple] .photos-only .connection p{color:#8e8e93}
+html[data-ui=apple] .photos-only .primary{background:#007aff;border:0;border-radius:10px;color:#fff;font-weight:600}
+html[data-ui=apple] .photos-only .tools input{background:#7676801f;border:0;border-radius:10px;color:inherit;padding:9px 12px}
+html[data-ui=apple] .photos-only .photo-sections{display:none}
+html[data-ui=apple] .photos-only header button{background:#7676801f;border:0;border-radius:9px;color:#007aff;font-weight:500}
+html[data-ui=apple] .library-zoom{margin:6px 16px 12px;max-width:none;border:0;border-radius:9px;padding:2px;background:#7676801f;display:flex}
+html[data-ui=apple] .library-zoom button{background:transparent;border:0;border-radius:7px;color:#000;font-weight:500;font-size:13px;flex:1;padding:6px 4px}
+html[data-ui=apple] .library-zoom button[aria-current=true]{background:#fff;color:#000;box-shadow:0 1px 3px #00000026,0 0 0 .5px #00000014}
+html[data-ui=apple] .photos-only .photo-grid{grid-template-columns:repeat(3,1fr);gap:1px;padding:1px 0}
+html[data-ui=apple] .photos-only .photo-tile,html[data-ui=apple] .photos-only .photo-card,html[data-ui=apple] .photos-only .photo-grid img{border-radius:1px}
+html[data-ui=apple] .photos-only .photo-tile{box-shadow:none}
+html[data-ui=apple] .photos-only .photo-day{font-size:20px;font-weight:700;color:inherit;margin:18px 16px 6px;padding:0;background:none;position:static;backdrop-filter:none}
+html[data-ui=apple] #photoNavigation{background:#ffffffd9;backdrop-filter:saturate(180%) blur(22px);-webkit-backdrop-filter:saturate(180%) blur(22px);border-top:.5px solid #00000029;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+html[data-ui=apple] #photoNavigation button{color:#8e8e93;font-size:10px;font-weight:500;gap:2px}
+html[data-ui=apple] #photoNavigation span{font-size:10px}
+html[data-ui=apple] #photoNavigation [aria-current=true]{background:transparent;color:#007aff}
+html[data-ui=apple] #photoNavigation [aria-current=true]::after{display:none}
+html[data-ui=apple] #photoNavigation svg{width:26px;height:26px;stroke-width:1.6}
+html[data-ui=apple].theme-dark body,html[data-ui=apple] body.theme-dark,html[data-ui=apple] .theme-dark .photos-only{background:#000;color:#fff}
+html[data-ui=apple] .theme-dark .library-zoom,html[data-ui=apple].theme-dark .library-zoom{background:#7676803d}
+html[data-ui=apple] .theme-dark .library-zoom button,html[data-ui=apple].theme-dark .library-zoom button{color:#fff}
+html[data-ui=apple] .theme-dark .library-zoom button[aria-current=true],html[data-ui=apple].theme-dark .library-zoom button[aria-current=true]{background:#636366;color:#fff}
+html[data-ui=apple] .theme-dark #photoNavigation,html[data-ui=apple].theme-dark #photoNavigation{background:#1c1c1ee6;border-top-color:#ffffff1f}
+html[data-ui=apple] .theme-dark .photos-only .primary,html[data-ui=apple].theme-dark .photos-only .primary{background:#0a84ff}
+.foryou{padding:0 0 24px;max-width:1100px;margin:0 auto}
+.foryou-title{font-size:34px;font-weight:800;letter-spacing:-.7px;margin:14px 16px 6px}
+.foryou-collection{margin-top:6px}
+.foryou-collection h3{font-size:20px;font-weight:700;letter-spacing:-.3px;margin:22px 16px 10px}
+.foryou-row{display:flex;gap:10px;overflow-x:auto;padding:0 16px 4px;scrollbar-width:none}
+.foryou-row::-webkit-scrollbar{display:none}
+.foryou-card{flex:0 0 auto;width:150px;border:0;background:transparent;padding:0;margin:0;text-align:left;color:inherit;cursor:pointer}
+.foryou-card img{width:150px;height:150px;object-fit:cover;border-radius:12px;background:#e5e5ea;display:block}
+.foryou-card span{display:block;font-size:12px;color:#8e8e93;margin-top:6px}
+.foryou-card:active img{filter:brightness(.9)}
+.foryou-empty{color:#8e8e93;margin:24px 16px;font-size:14px}
+.theme-dark .foryou-card img{background:#1c1c1e}
+@media(max-width:600px){html[data-ui=apple] .library-zoom{margin:6px 12px 10px}}
+
+/* ---- Apple mode: replace app chrome with a clean Photos layout ---- */
+html[data-ui=apple] .photos-only header{gap:10px;align-items:center;padding:8px 14px 4px;background:transparent;position:sticky;top:0;z-index:6}
+html[data-ui=apple] .photos-only #appVersion,
+html[data-ui=apple] .photos-only #refresh,
+html[data-ui=apple] .photos-only #openSettings,
+html[data-ui=apple] .photos-only #connect,
+html[data-ui=apple] .photos-only #connectToken,
+html[data-ui=apple] .photos-only #disconnect,
+html[data-ui=apple] .photos-only header .eyebrow{display:none!important}
+html[data-ui=apple] .photos-only header h1#appTitle{font-size:34px;font-weight:800;letter-spacing:-.8px;margin:0;line-height:1.05;color:inherit}
+html[data-ui=apple] .photos-only #openMenu{width:36px;height:36px;min-height:0;border:0;border-radius:50%;background:#7676801f;color:#007aff;display:grid;place-items:center;padding:0}
+html[data-ui=apple] .photos-only #openMenu svg{width:19px;height:19px}
+html[data-ui=apple] .photos-only .connection,
+html[data-ui=apple] .photos-only #photoControlContent{display:none!important}
+html[data-ui=apple] .photos-only .tools{margin:2px 14px 8px;padding:0}
+html[data-ui=apple] .photos-only .tools #search{width:100%;background:#7676801f;border:0;border-radius:10px;padding:9px 12px;color:inherit;font-size:15px}
+html[data-ui=apple] .photos-only .tools #search::placeholder{color:#8e8e93}
+html[data-ui=apple] .photos-only .photo-sections{display:none!important}
+html[data-ui=apple] .photos-only .selection-toolbar,
+html[data-ui=apple] .photos-only .photo-actions{background:#ffffffd9;backdrop-filter:blur(20px);border:0}
+html[data-ui=apple].theme-dark .photos-only header .photos-only #search,html[data-ui=apple] .theme-dark .photos-only .tools #search,html[data-ui=apple].theme-dark .photos-only .tools #search{background:#1c1c1e;color:#fff}
+html[data-ui=apple] .theme-dark .photos-only header h1#appTitle{color:#fff}
